@@ -11,7 +11,7 @@ def test_valid_iata():
 def test_invalid_iata():
     assert is_valid_iata("KJFK") is False
     assert is_valid_iata("JF") is False
-    assert is_valid_iata("123") is True
+    assert is_valid_iata("123") is False
     assert is_valid_iata("") is False
 
 

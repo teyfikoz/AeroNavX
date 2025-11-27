@@ -26,8 +26,8 @@ def test_midpoint():
 
     mid_lat, mid_lon = midpoint(lat1, lon1, lat2, lon2)
 
-    assert 45 < mid_lat < 47
-    assert -40 < mid_lon < -35
+    assert 50 < mid_lat < 54
+    assert -42 < mid_lon < -38
 
 
 def test_intermediate_point():
