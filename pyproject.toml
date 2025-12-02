@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aeronavx"
-version = "0.1.1"
+version = "0.1.2"
 description = "Production-grade airport data and flight geometry library"
 readme = "README.md"
 authors = [
@@ -68,7 +68,7 @@ include = ["aeronavx*"]
 exclude = ["tests*", "examples*", "docs*"]
 
 [tool.setuptools.package-data]
-aeronavx = ["py.typed"]
+aeronavx = ["py.typed", "data/*.csv", "data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

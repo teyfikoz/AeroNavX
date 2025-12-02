@@ -19,7 +19,8 @@ _loaded = False
 
 def _find_data_file() -> Path:
     possible_paths = [
-        Path(__file__).parent.parent.parent / "data" / "airports.csv",
+        Path(__file__).parent.parent / "data" / "airports.csv",  # aeronavx/data/airports.csv
+        Path(__file__).parent.parent.parent / "data" / "airports.csv",  # legacy support
         Path.cwd() / "data" / "airports.csv",
         Path.cwd() / "airports.csv",
     ]
