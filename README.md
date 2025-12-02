@@ -2,9 +2,11 @@
 
 A production-grade Python library for airport data and flight geometry calculations.
 
+**🆕 v0.2.0:** Now with **84,000+ airports** from [OurAirports](https://ourairports.com) (MIT License)
+
 ## Features
 
-- 🛫 **Airport Database**: Global airport data with efficient IATA/ICAO indexing
+- 🛫 **Airport Database**: 84,000+ global airports with efficient IATA/ICAO indexing
 - 📏 **Distance Calculations**: Haversine, Vincenty, and Spherical Law of Cosines
 - 🌍 **Geodesy**: Bearings, midpoints, great circle paths
 - 🔍 **Search**: Fuzzy name search, nearest neighbor queries, radius search
@@ -18,6 +20,11 @@ A production-grade Python library for airport data and flight geometry calculati
 
 ## Installation
 
+```bash
+pip install aeronavx
+```
+
+**Or from source:**
 ```bash
 git clone https://github.com/teyfikoz/AeroNavX.git
 cd AeroNavX
@@ -43,6 +50,27 @@ nearest = aeronavx.nearest_airport(41.0, 29.0, n=5)
 # Estimate emissions
 co2 = aeronavx.estimate_co2_kg_for_segment("IST", "JFK")
 print(f"CO2: {co2:.2f} kg per passenger")
+```
+
+### Advanced: Filtering Airports
+
+```python
+from aeronavx.core import loader
+
+# Load only major airports (large + medium with scheduled service)
+major_airports = loader.load_airports(
+    include_types=['large_airport', 'medium_airport'],
+    scheduled_service_only=True
+)
+print(f"Major airports: {len(major_airports):,}")  # ~3,200
+
+# Load specific countries
+us_airports = loader.load_airports(countries=['US'])
+print(f"US airports: {len(us_airports):,}")  # ~20,000
+
+# Load airports with IATA codes only
+iata_airports = loader.load_airports(has_iata_only=True)
+print(f"IATA airports: {len(iata_airports):,}")  # ~9,000
 ```
 
 ## CLI Usage
@@ -78,12 +106,14 @@ Then access:
 
 ## Data
 
-Place your `airports.csv` file in the `data/` directory. The CSV should contain:
-- Basic info: id, ident, type, name
-- Coordinates: latitude_deg, longitude_deg, elevation_ft
-- Location: continent, iso_country, iso_region, municipality
-- Codes: gps_code (ICAO), iata_code, local_code
-- Optional: scheduled_service, home_link, wikipedia_link, keywords
+AeroNavX includes **84,000+ airports** from [OurAirports](https://ourairports.com/data/), which provides:
+- ✅ **Global Coverage**: Airports, heliports, seaplane bases, and more
+- ✅ **MIT License**: Free to use commercially
+- ✅ **Regular Updates**: Community-maintained and updated
+- ✅ **Comprehensive Data**: IATA/ICAO codes, coordinates, types, and more
+
+**Data Attribution:**
+Airport data from [OurAirports](https://ourairports.com) (David Megginson et al.) - Licensed under [MIT License](https://github.com/davidmegginson/ourairports-data)
 
 ## Examples
 

@@ -56,7 +56,40 @@ def _parse_float(value: str) -> float | None:
         return None
 
 
-def load_airports(data_path: Optional[Path | str] = None, force_reload: bool = False) -> list[Airport]:
+def load_airports(
+    data_path: Optional[Path | str] = None,
+    force_reload: bool = False,
+    include_types: Optional[list[str]] = None,
+    exclude_types: Optional[list[str]] = None,
+    countries: Optional[list[str]] = None,
+    scheduled_service_only: bool = False,
+    has_iata_only: bool = False,
+) -> list[Airport]:
+    """
+    Load airports from CSV file with optional filtering.
+
+    Args:
+        data_path: Path to airports CSV file (default: auto-detect)
+        force_reload: Force reload even if already loaded
+        include_types: Only include these airport types (e.g., ['large_airport', 'medium_airport'])
+        exclude_types: Exclude these airport types (e.g., ['heliport', 'closed'])
+        countries: Only include these countries (ISO codes, e.g., ['US', 'GB', 'TR'])
+        scheduled_service_only: Only include airports with scheduled service
+        has_iata_only: Only include airports with IATA codes
+
+    Returns:
+        List of Airport objects
+
+    Example:
+        # Load only major airports
+        airports = load_airports(
+            include_types=['large_airport', 'medium_airport'],
+            scheduled_service_only=True
+        )
+
+        # Load specific countries
+        airports = load_airports(countries=['US', 'GB', 'TR'])
+    """
     global _airports, _iata_index, _icao_index, _id_index, _loaded
 
     if _loaded and not force_reload:
@@ -98,21 +131,51 @@ def load_airports(data_path: Optional[Path | str] = None, force_reload: bool = F
 
                     iata_code = row.get("iata_code", "").strip().upper() or None
                     gps_code = row.get("gps_code", "").strip().upper() or None
+                    icao_code = row.get("icao_code", "").strip().upper() or None  # OurAirports format
                     local_code = row.get("local_code", "").strip().upper() or None
+
+                    # Use icao_code if gps_code is empty (OurAirports compatibility)
+                    if not gps_code and icao_code:
+                        gps_code = icao_code
+
+                    airport_type = row.get("type", "").strip() or None
+                    iso_country = row.get("iso_country", "").strip().upper() or None
+                    scheduled_service = _parse_bool(row.get("scheduled_service", ""))
+
+                    # Apply filters
+                    if include_types and airport_type not in include_types:
+                        skipped += 1
+                        continue
+
+                    if exclude_types and airport_type in exclude_types:
+                        skipped += 1
+                        continue
+
+                    if countries and iso_country not in countries:
+                        skipped += 1
+                        continue
+
+                    if scheduled_service_only and not scheduled_service:
+                        skipped += 1
+                        continue
+
+                    if has_iata_only and not iata_code:
+                        skipped += 1
+                        continue
 
                     airport = Airport(
                         id=_parse_int(row.get("id", "")),
                         ident=row.get("ident", "").strip() or None,
-                        type=row.get("type", "").strip() or None,
+                        type=airport_type,
                         name=name,
                         latitude_deg=lat,
                         longitude_deg=lon,
                         elevation_ft=_parse_float(row.get("elevation_ft", "")),
                         continent=row.get("continent", "").strip() or None,
-                        iso_country=row.get("iso_country", "").strip().upper() or None,
+                        iso_country=iso_country,
                         iso_region=row.get("iso_region", "").strip().upper() or None,
                         municipality=row.get("municipality", "").strip() or None,
-                        scheduled_service=_parse_bool(row.get("scheduled_service", "")),
+                        scheduled_service=scheduled_service,
                         gps_code=gps_code,
                         iata_code=iata_code,
                         local_code=local_code,
