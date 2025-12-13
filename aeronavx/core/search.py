@@ -123,6 +123,28 @@ def airports_within_radius(lat: float, lon: float, radius_km: float) -> list[Air
     return index.within_radius(lat, lon, radius_km)
 
 
+def nearest_airport(lat: float, lon: float, max_distance_km: float | None = None) -> Airport | None:
+    """
+    Find the single nearest airport to a location.
+
+    Args:
+        lat: Latitude
+        lon: Longitude
+        max_distance_km: Maximum search distance in km
+
+    Returns:
+        Nearest Airport object or None if no airports found
+
+    Examples:
+        >>> from aeronavx import nearest_airport
+        >>> airport = nearest_airport(40.7128, -74.0060)  # NYC
+        >>> print(f"{airport.iata_code}: {airport.name}")
+        JFK: John F Kennedy International Airport
+    """
+    results = nearest_airports(lat, lon, n=1, max_distance_km=max_distance_km)
+    return results[0] if results else None
+
+
 def nearest_airport_to_point(lat: float, lon: float, n: int = 1) -> list[Airport]:
     return nearest_airports(lat, lon, n)
 
