@@ -8,7 +8,7 @@ version = "0.3.0"
 description = "Production-grade airport data and flight geometry library"
 readme = "README.md"
 authors = [
-    { name = "Tefik Yildiz", email = "teyfikoz@example.com" }
+    { name = "Teyfik OZ", email = "teyfikoz@example.com" }
 ]
 license = { text = "MIT" }
 classifiers = [
