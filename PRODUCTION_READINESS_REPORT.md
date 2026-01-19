@@ -111,3 +111,5 @@ Results:
   - Recommendation: consider precomputed embeddings or ANN acceleration (FAISS).
 - Offline mode still logs from sentence-transformers about missing model (noise).
   - Recommendation: consider suppressing or documenting this log for offline-first workflows.
+- Setuptools deprecation warnings for license metadata in `pyproject.toml`.
+  - Recommendation: switch to SPDX license string and adjust classifiers in a follow-up.
