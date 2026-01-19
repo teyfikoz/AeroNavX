@@ -1,27 +1,57 @@
 # AeroNavX
 
-A production-grade Python library for airport data and flight geometry calculations.
+![PyPI](https://img.shields.io/pypi/v/aeronavx)
+![Python](https://img.shields.io/pypi/pyversions/aeronavx)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![CI](https://github.com/teyfikoz/AeroNavX/actions/workflows/test.yml/badge.svg)
 
-**🆕 v0.2.0:** Now with **84,000+ airports** from [OurAirports](https://ourairports.com) (MIT License)
+A production-grade **AI Aviation SDK** for airport data, flight geometry, network intelligence, emissions, and passenger experience.
 
 ## Features
 
-- 🛫 **Airport Database**: 84,000+ global airports with efficient IATA/ICAO indexing
-- 📏 **Distance Calculations**: Haversine, Vincenty, and Spherical Law of Cosines
+- 🛫 **Airport Database**: 84,000+ global airports with IATA/ICAO indexing
+- 🛬 **Runway Information**: 47,000+ runways with dimensions and surfaces
+- 📊 **Aviation Statistics**: Country, continent, and global analytics
+- 📏 **Distance Calculations**: Haversine, Vincenty, SLC
 - 🌍 **Geodesy**: Bearings, midpoints, great circle paths
-- 🔍 **Search**: Fuzzy name search, nearest neighbor queries, radius search
-- 🛤️ **Routing**: Multi-segment routes, flight time estimation, shortest paths
-- 📊 **Analytics**: Statistics by country, continent, type, and elevation
-- ⏰ **Timezone Support**: Automatic timezone detection and local time
-- 🌱 **Emissions**: CO2 emissions estimation per passenger
-- 🌤️ **Weather**: METAR and TAF data fetching
-- 💻 **CLI**: Command-line interface for quick queries
-- 🌐 **REST API**: FastAPI-based web service
+- 🔍 **Search**: Fuzzy name search + nearest neighbor queries
+- 🤖 **AI Semantic Search** (HF): Embedding-based airport search
+- 🧠 **Jet Lag Intelligence**: Severity, direction, recovery estimation
+- 🌐 **Network & Hub Intelligence**: Connectivity-based hub scoring
+- 🛤️ **Synthetic Routing**: Great-circle routes + waypoint generation
+- 🌱 **Emissions**: Baseline + advanced emissions with SAF comparisons
+- ⏰ **Timezone Support**: Local time conversion + fallback offset
+- 🌤️ **Weather**: METAR/TAF fetching
+- 💻 **CLI**: Command-line interface
+- 🌐 **REST API**: FastAPI-based endpoints
+
+## Architecture
+
+- **Core (`aeronavx/core`)**: data loaders, geodesy, routing, emissions, statistics
+- **AI Layer (`aeronavx/hf`)**: semantic search, cache, offline inference
+- **Interfaces**: CLI (`aeronavx/cli`) + FastAPI server (`aeronavx/api`)
+- **Data (`aeronavx/data`)**: bundled OurAirports datasets for offline-first use
 
 ## Installation
 
 ```bash
 pip install aeronavx
+```
+
+### Extras matrix
+
+```bash
+# Full data features (pandas, scipy, timezonefinder, rapidfuzz, requests)
+pip install aeronavx[full]
+
+# AI semantic search (HF)
+pip install aeronavx[hf]
+
+# API server
+pip install aeronavx[api]
+
+# Everything
+pip install aeronavx[all]
 ```
 
 **Or from source:**
@@ -52,6 +82,83 @@ co2 = aeronavx.estimate_co2_kg_for_segment("IST", "JFK")
 print(f"CO2: {co2:.2f} kg per passenger")
 ```
 
+### AI Semantic Search (HF)
+
+```python
+import aeronavx as anx
+
+results = anx.semantic_search("New York international", top_k=5)
+
+# If pandas is installed, results is a DataFrame
+print(results[["iata", "name", "municipality", "score"]])
+```
+
+### Jet Lag Intelligence
+
+```python
+import aeronavx as anx
+
+ist = anx.get_airport("IST")
+jfk = anx.get_airport("JFK")
+
+jet_lag = anx.calculate_jet_lag(ist, jfk, age=35)
+print(jet_lag.direction.value, jet_lag.severity.value, jet_lag.estimated_recovery_days)
+```
+
+### Network & Hub Intelligence
+
+```python
+import aeronavx as anx
+
+hubs = anx.identify_global_hubs(top_n=5)
+for hub in hubs:
+    print(hub.airport.iata_code, hub.hub_score)
+```
+
+### Advanced Emissions + SAF
+
+```python
+import aeronavx as anx
+
+emissions = anx.calculate_flight_emissions(
+    "IST", "JFK",
+    aircraft_type=anx.AircraftType.WIDE_BODY,
+    fuel_type=anx.FuelType.JET_A1,
+    load_factor=0.85,
+)
+print(emissions.total_co2_kg, emissions.co2_per_passenger_kg)
+
+savings = anx.compare_saf_savings("IST", "JFK", saf_percentage=50)
+print(savings.reduction_percentage)
+```
+
+### Synthetic Routing
+
+```python
+import aeronavx as anx
+
+route = anx.generate_route("IST", "JFK", num_waypoints=8)
+print(route.total_distance_km, route.total_time_hours)
+```
+
+### Offline Mode & Cache
+
+Set environment variables before import:
+
+```bash
+export HF_TOKEN="your_token"
+export AERONAVX_CACHE="~/.aeronavx"
+export AERONAVX_OFFLINE=1
+export AERONAVX_EMBED_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+```
+
+Offline mode uses cached models only; if the model is not cached, a clear error is raised.
+
+Supported tokens:
+- `HF_TOKEN`
+- `HF_API_TOKEN`
+- `HUGGINGFACE_HUB_TOKEN`
+
 ### Advanced: Filtering Airports
 
 ```python
@@ -73,6 +180,54 @@ iata_airports = loader.load_airports(has_iata_only=True)
 print(f"IATA airports: {len(iata_airports):,}")  # ~9,000
 ```
 
+### Runway Information
+
+```python
+import aeronavx
+
+# Get all runways for an airport
+runways = aeronavx.get_runways_by_airport("KJFK")
+for rwy in runways:
+    print(f"{rwy.designation}: {rwy.length_ft:.0f}ft, {rwy.surface}")
+
+# Get the longest runway
+longest = aeronavx.get_longest_runway("KJFK")
+print(f"Longest: {longest.designation} - {longest.length_ft:.0f}ft")
+
+# Get only paved runways
+paved = aeronavx.get_paved_runways("KJFK")
+print(f"Paved runways: {len(paved)}")
+```
+
+### Aviation Statistics
+
+```python
+import aeronavx
+
+# Global statistics
+stats = aeronavx.get_global_stats()
+print(f"Total airports: {stats.total_airports:,}")
+print(f"Total runways: {stats.total_runways:,}")
+print(f"Countries: {stats.countries_count}")
+print(f"Longest runway: {stats.longest_runway_ft:,.0f} ft")
+
+# Country statistics
+us_stats = aeronavx.get_country_stats("US")
+print(f"US has {us_stats.total_airports:,} airports")
+print(f"Large airports: {us_stats.large_airports}")
+print(f"Total runways: {us_stats.total_runways:,}")
+
+# Continent statistics
+eu_stats = aeronavx.get_continent_stats("EU")
+print(f"Europe: {eu_stats.total_airports:,} airports")
+print(f"Countries: {eu_stats.countries_count}")
+
+# Top countries
+top = aeronavx.get_top_countries_by_airports(5)
+for country, count in top:
+    print(f"{country}: {count:,} airports")
+```
+
 ## CLI Usage
 
 ```bash
@@ -90,6 +245,21 @@ aeronavx emissions --from IST --to LHR
 
 # Flight time
 aeronavx flight-time --from IST --to JFK
+
+# Semantic search (HF)
+aeronavx semantic-search --query "London Heathrow"
+
+# Jet lag analysis
+aeronavx jet-lag --from IST --to JFK --age 35
+
+# Global hubs
+aeronavx hubs --top-n 5
+
+# Advanced emissions
+aeronavx emissions-advanced --from IST --to JFK --aircraft-type wide_body --saf-percent 50
+
+# Synthetic route
+aeronavx synthetic-route --from IST --to JFK --waypoints 8
 ```
 
 ## API Server
@@ -103,17 +273,22 @@ Then access:
 - http://localhost:8000/airport/IST
 - http://localhost:8000/distance?from=IST&to=JFK
 - http://localhost:8000/nearest?lat=41.0&lon=29.0&n=5
+- http://localhost:8000/semantic-search?q=London%20Heathrow
+- http://localhost:8000/jet-lag?from=IST&to=JFK
+- http://localhost:8000/hubs?top_n=5
+- http://localhost:8000/emissions-advanced?from=IST&to=JFK&aircraft_type=wide_body
+- http://localhost:8000/synthetic-route?from=IST&to=JFK
 
 ## Data
 
-AeroNavX includes **84,000+ airports** from [OurAirports](https://ourairports.com/data/), which provides:
-- ✅ **Global Coverage**: Airports, heliports, seaplane bases, and more
+AeroNavX includes **84,000+ airports** and **47,000+ runways** from [OurAirports](https://ourairports.com/data/), which provides:
+- ✅ **Global Coverage**: Airports, heliports, seaplane bases, and runways worldwide
 - ✅ **MIT License**: Free to use commercially
 - ✅ **Regular Updates**: Community-maintained and updated
-- ✅ **Comprehensive Data**: IATA/ICAO codes, coordinates, types, and more
+- ✅ **Comprehensive Data**: IATA/ICAO codes, coordinates, types, runway dimensions, surfaces, and more
 
 **Data Attribution:**
-Airport data from [OurAirports](https://ourairports.com) (David Megginson et al.) - Licensed under [MIT License](https://github.com/davidmegginson/ourairports-data)
+Airport and runway data from [OurAirports](https://ourairports.com) (David Megginson et al.) - Licensed under [MIT License](https://github.com/davidmegginson/ourairports-data)
 
 ## Examples
 
@@ -129,9 +304,25 @@ See `examples/` directory for:
 pytest
 ```
 
+Run real-model semantic search tests (optional):
+
+```bash
+AERONAVX_RUN_REAL_MODEL_TESTS=1 pytest tests/test_semantic_search_real_model.py
+```
+
+## Benchmarks
+
+Run the semantic search benchmark locally:
+
+```bash
+python benchmark_semantic_search.py --sample-size 2000
+```
+
+Latest benchmark outputs are included in `PRODUCTION_READINESS_REPORT.md`.
+
 ## Dependencies
 
-**Required**: Python >= 3.10
+**Required**: Python >= 3.9
 
 **Optional**:
 - `pandas`: DataFrame support
@@ -140,6 +331,14 @@ pytest
 - `timezonefinder`: Timezone support
 - `fastapi`, `uvicorn`: API server
 - `requests`: Weather data
+- `sentence-transformers`, `transformers`, `torch`, `datasets`, `huggingface_hub`, `accelerate`: HF semantic search
+- `faiss-cpu` (optional): ANN acceleration for semantic search
+
+## Roadmap
+
+- **v4.0**: demand forecasting, delay prediction, airline ops dashboards
+- **v4.1**: carbon optimization + lifecycle emissions modeling
+- **v4.2**: hosted inference endpoints and enterprise deployments
 
 ## License
 

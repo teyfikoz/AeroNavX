@@ -101,7 +101,7 @@ def precompute_nearest_neighbors(k: int = 5) -> dict[str, list[Airport]]:
         )
 
         neighbors_filtered = [
-            a for a in neighbors if a.name != airport.name
+            a for a in neighbors if a is not airport
         ][:k]
 
         key = airport.iata_code or airport.gps_code or str(airport.id)
@@ -110,7 +110,7 @@ def precompute_nearest_neighbors(k: int = 5) -> dict[str, list[Airport]]:
     return _precomputed_neighbors
 
 
-def get_precomputed_neighbors(code: str, code_type: str = "iata") -> list[Airport] | None:
+def get_precomputed_neighbors(code: str, code_type: str = "iata") -> Optional[list[Airport]]:
     if _precomputed_neighbors is None:
         return None
 

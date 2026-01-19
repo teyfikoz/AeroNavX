@@ -81,6 +81,9 @@ def intermediate_point(
     )
     delta = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
+    if math.isclose(delta, 0.0, abs_tol=1e-12):
+        return (lat1, lon1)
+
     a_frac = math.sin((1 - fraction) * delta) / math.sin(delta)
     b_frac = math.sin(fraction * delta) / math.sin(delta)
 

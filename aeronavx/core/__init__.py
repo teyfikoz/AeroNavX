@@ -33,6 +33,7 @@ from .analytics import (
 from .timezone import (
     get_timezone_for_airport,
     get_timezone_for_code,
+    get_timezone_offset,
     local_time_for_airport,
     local_time_for_code,
 )
@@ -41,6 +42,32 @@ from .emissions import (
     estimate_co2_kg_for_route,
     estimate_co2_kg_by_codes,
     estimate_co2_kg_route_by_codes,
+)
+from .emissions_advanced import (
+    calculate_flight_emissions,
+    compare_saf_savings,
+    AircraftType,
+    FuelType,
+    EmissionsResult,
+    SafSavings,
+)
+from .passenger_experience import (
+    calculate_jet_lag,
+    JetLagResult,
+    JetLagSeverity,
+    TravelDirection,
+)
+from .network_intelligence import (
+    NetworkIntelligence,
+    identify_global_hubs,
+    hub_intelligence_score,
+    HubScore,
+)
+from .synthetic_routes import (
+    generate_route,
+    generate_route_by_codes,
+    SyntheticRoute,
+    Waypoint,
 )
 from .weather import get_metar, get_taf
 
@@ -86,12 +113,31 @@ __all__ = [
     "airports_with_scheduled_service",
     "get_timezone_for_airport",
     "get_timezone_for_code",
+    "get_timezone_offset",
     "local_time_for_airport",
     "local_time_for_code",
     "estimate_co2_kg_for_segment",
     "estimate_co2_kg_for_route",
     "estimate_co2_kg_by_codes",
     "estimate_co2_kg_route_by_codes",
+    "calculate_flight_emissions",
+    "compare_saf_savings",
+    "AircraftType",
+    "FuelType",
+    "EmissionsResult",
+    "SafSavings",
+    "calculate_jet_lag",
+    "JetLagResult",
+    "JetLagSeverity",
+    "TravelDirection",
+    "NetworkIntelligence",
+    "identify_global_hubs",
+    "hub_intelligence_score",
+    "HubScore",
+    "generate_route",
+    "generate_route_by_codes",
+    "SyntheticRoute",
+    "Waypoint",
     "get_metar",
     "get_taf",
 ]

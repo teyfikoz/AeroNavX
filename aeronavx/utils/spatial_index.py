@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Optional, Sequence
 
 if TYPE_CHECKING:
     from ..models.airport import Airport
@@ -32,7 +32,7 @@ class SpatialIndex:
         lat: float,
         lon: float,
         n: int = 1,
-        max_distance_km: float | None = None
+        max_distance_km: Optional[float] = None
     ) -> list["Airport"]:
         if self._use_scipy:
             return self._nearest_scipy(lat, lon, n, max_distance_km)
@@ -44,7 +44,7 @@ class SpatialIndex:
         lat: float,
         lon: float,
         n: int,
-        max_distance_km: float | None
+        max_distance_km: Optional[float]
     ) -> list["Airport"]:
         lat_rad = math.radians(lat)
         lon_rad = math.radians(lon)
@@ -78,7 +78,7 @@ class SpatialIndex:
         lat: float,
         lon: float,
         n: int,
-        max_distance_km: float | None
+        max_distance_km: Optional[float]
     ) -> list["Airport"]:
         from ..core.distance import haversine_km
 

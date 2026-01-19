@@ -65,3 +65,11 @@ def test_great_circle_path():
 def test_invalid_fraction():
     with pytest.raises(ValueError):
         intermediate_point(0.0, 0.0, 10.0, 10.0, 1.5)
+
+
+def test_intermediate_point_same_location():
+    lat, lon = 12.34, 56.78
+
+    point = intermediate_point(lat, lon, lat, lon, 0.5)
+
+    assert point == (lat, lon)

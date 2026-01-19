@@ -29,7 +29,7 @@ def _sanitize_icao(icao: str) -> str:
     return icao_clean
 
 
-def get_metar(icao: str, timeout: float = 5.0) -> str | None:
+def get_metar(icao: str, timeout: float = 5.0) -> Optional[str]:
     if not HAS_REQUESTS:
         logger.warning("requests library not installed, cannot fetch METAR data")
         return None
@@ -63,7 +63,7 @@ def get_metar(icao: str, timeout: float = 5.0) -> str | None:
         return None
 
 
-def get_taf(icao: str, timeout: float = 5.0) -> str | None:
+def get_taf(icao: str, timeout: float = 5.0) -> Optional[str]:
     if not HAS_REQUESTS:
         logger.warning("requests library not installed, cannot fetch TAF data")
         return None

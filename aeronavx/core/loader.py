@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from ..models.airport import Airport
 from ..exceptions import DataLoadError
@@ -34,7 +34,7 @@ def _find_data_file() -> Path:
     )
 
 
-def _parse_bool(value: str) -> bool | None:
+def _parse_bool(value: str) -> Optional[bool]:
     if not value or value.lower() in ("", "no", "0", "false"):
         return False
     if value.lower() in ("yes", "1", "true"):
@@ -42,14 +42,14 @@ def _parse_bool(value: str) -> bool | None:
     return None
 
 
-def _parse_int(value: str) -> int | None:
+def _parse_int(value: str) -> Optional[int]:
     try:
         return int(value) if value else None
     except ValueError:
         return None
 
 
-def _parse_float(value: str) -> float | None:
+def _parse_float(value: str) -> Optional[float]:
     try:
         return float(value) if value else None
     except ValueError:
@@ -57,7 +57,7 @@ def _parse_float(value: str) -> float | None:
 
 
 def load_airports(
-    data_path: Optional[Path | str] = None,
+    data_path: Optional[Union[Path, str]] = None,
     force_reload: bool = False,
     include_types: Optional[list[str]] = None,
     exclude_types: Optional[list[str]] = None,
@@ -92,7 +92,15 @@ def load_airports(
     """
     global _airports, _iata_index, _icao_index, _id_index, _loaded
 
-    if _loaded and not force_reload:
+    filters_requested = any([
+        include_types,
+        exclude_types,
+        countries,
+        scheduled_service_only,
+        has_iata_only,
+    ])
+
+    if _loaded and not force_reload and data_path is None and not filters_requested:
         return _airports
 
     if data_path is None:
@@ -225,7 +233,7 @@ def _build_indices() -> None:
             _id_index[airport.id] = airport
 
 
-def get_airport_by_iata(code: str) -> Airport | None:
+def get_airport_by_iata(code: str) -> Optional[Airport]:
     if not _loaded:
         load_airports()
 
@@ -233,7 +241,7 @@ def get_airport_by_iata(code: str) -> Airport | None:
     return _iata_index.get(normalized)
 
 
-def get_airport_by_icao(code: str) -> Airport | None:
+def get_airport_by_icao(code: str) -> Optional[Airport]:
     if not _loaded:
         load_airports()
 
@@ -241,7 +249,7 @@ def get_airport_by_icao(code: str) -> Airport | None:
     return _icao_index.get(normalized)
 
 
-def get_airport_by_id(airport_id: int) -> Airport | None:
+def get_airport_by_id(airport_id: int) -> Optional[Airport]:
     if not _loaded:
         load_airports()
 

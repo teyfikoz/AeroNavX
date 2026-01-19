@@ -4,25 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aeronavx"
-version = "0.3.1"
-description = "Production-grade airport data and flight geometry library"
+version = "3.0.0"
+description = "Production-grade AI aviation SDK for airport data and analytics"
 readme = "README.md"
 authors = [
     { name = "Teyfik OZ", email = "teyfikoz@example.com" }
 ]
 license = { text = "MIT" }
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-keywords = ["airport", "aviation", "geodesy", "geography", "distance", "routing"]
-requires-python = ">=3.10"
+keywords = ["airport", "aviation", "geodesy", "geography", "distance", "routing", "ai", "ml"]
+requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
@@ -31,6 +33,7 @@ dev = [
     "pytest-cov>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
+    "numpy>=1.21",
 ]
 full = [
     "pandas>=2.0",
@@ -43,6 +46,14 @@ api = [
     "fastapi>=0.104",
     "uvicorn[standard]>=0.24",
 ]
+hf = [
+    "sentence-transformers>=2.6",
+    "transformers>=4.36",
+    "torch>=2.1",
+    "huggingface_hub>=0.20",
+    "datasets>=2.16",
+    "accelerate>=0.24",
+]
 all = [
     "pandas>=2.0",
     "scipy>=1.10",
@@ -51,6 +62,12 @@ all = [
     "requests>=2.31",
     "fastapi>=0.104",
     "uvicorn[standard]>=0.24",
+    "sentence-transformers>=2.6",
+    "transformers>=4.36",
+    "torch>=2.1",
+    "huggingface_hub>=0.20",
+    "datasets>=2.16",
+    "accelerate>=0.24",
 ]
 
 [project.urls]
@@ -79,11 +96,11 @@ addopts = "-v --strict-markers"
 
 [tool.black]
 line-length = 100
-target-version = ["py310"]
+target-version = ["py39"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py39"
 select = ["E", "F", "W", "I", "N", "UP"]
 ignore = []
 

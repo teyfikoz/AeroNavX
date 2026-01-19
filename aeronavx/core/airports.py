@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from ..models.airport import Airport
 from ..core.loader import (
@@ -15,7 +15,7 @@ from ..core.search import (
 CodeType = Literal["iata", "icao", "auto"]
 
 
-def get(code: str, code_type: CodeType = "auto") -> Airport | None:
+def get(code: str, code_type: CodeType = "auto") -> Optional[Airport]:
     if code_type == "iata":
         return get_airport_by_iata(code)
     elif code_type == "icao":
@@ -29,11 +29,11 @@ def get(code: str, code_type: CodeType = "auto") -> Airport | None:
         raise ValueError(f"Invalid code_type: {code_type}. Must be 'iata', 'icao', or 'auto'")
 
 
-def get_by_iata(code: str) -> Airport | None:
+def get_by_iata(code: str) -> Optional[Airport]:
     return get_airport_by_iata(code)
 
 
-def get_by_icao(code: str) -> Airport | None:
+def get_by_icao(code: str) -> Optional[Airport]:
     return get_airport_by_icao(code)
 
 
