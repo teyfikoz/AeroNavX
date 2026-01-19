@@ -123,7 +123,7 @@ def airports_within_radius(lat: float, lon: float, radius_km: float) -> list[Air
     return index.within_radius(lat, lon, radius_km)
 
 
-def nearest_airport(lat: float, lon: float, max_distance_km: float | None = None) -> Airport | None:
+def nearest_airport(lat: float, lon: float, max_distance_km: Optional[float] = None) -> Optional[Airport]:
     """
     Find the single nearest airport to a location.
 
