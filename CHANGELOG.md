@@ -2,6 +2,13 @@
 
 All notable changes to AeroNavX are documented here.
 
+## [3.0.1] - 2026-01-19
+
+### Fixed
+- CI lint failures via formatting + import cleanup.
+- Python 3.9 lint compatibility (ruff config + typing guardrails).
+- Release workflow switched to Trusted Publisher (OIDC).
+
 ## [3.0.0] - 2026-01-19
 
 ### Added

@@ -1,7 +1,12 @@
-# AeroNavX v3.0.0 Release Notes
+# AeroNavX v3.0.1 Release Notes
+
+## Patch Summary
+- CI lint/formatting stabilized and import ordering standardized.
+- Trusted Publisher (OIDC) enabled for GitHub Actions releases.
+- Python 3.9 lint compatibility tightened without API changes.
 
 ## Platform Overview
-AeroNavX v3.0.0 ships as an **AI-powered Aviation Intelligence Platform** with offline-first datasets, optional Hugging Face semantic search, and production-ready analytics for airlines, cargo, defense, and research organizations.
+AeroNavX v3.0.1 continues the **AI-powered Aviation Intelligence Platform** introduced in v3.0.0, with offline-first datasets, optional Hugging Face semantic search, and production-ready analytics for airlines, cargo, defense, and research organizations.
 
 ## Feature Table
 
@@ -42,4 +47,4 @@ AeroNavX v3.0.0 ships as an **AI-powered Aviation Intelligence Platform** with o
 - Optional HF dependencies are installed with `pip install aeronavx[hf]`.
 
 ## Release Summary
-AeroNavX v3.0.0 is the first production-grade public AI aviation SDK with offline-first datasets, enterprise-ready AI extensions, and full CLI/API/SDK coverage.
+AeroNavX v3.0.1 is a maintenance release that preserves the full v3.0.0 feature set while hardening CI, linting, and publishing workflows.

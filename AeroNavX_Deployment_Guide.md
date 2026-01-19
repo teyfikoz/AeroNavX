@@ -137,7 +137,7 @@ CMD ["python", "-m", "aeronavx.api.server"]
 - Release workflow builds sdist + wheel and publishes to PyPI
 
 ## 19. Versioning
-- Current target: `3.0.0`
+- Current target: `3.0.1`
 - Follow semver: MAJOR for API changes, MINOR for new features, PATCH for fixes
 
 ## 20. Roadmap v4.0

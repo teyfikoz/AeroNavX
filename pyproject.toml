@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aeronavx"
-version = "3.0.0"
+version = "3.0.1"
 description = "Production-grade AI aviation SDK for airport data and analytics"
 readme = "README.md"
 authors = [

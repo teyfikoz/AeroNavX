@@ -84,7 +84,7 @@ def clear_semantic_search_cache() -> None:
     _semantic_engine = None
 
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 __all__ = [
     "Airport",

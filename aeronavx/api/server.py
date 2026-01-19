@@ -16,7 +16,7 @@ from ..core.search import nearest_airports, search_airports_by_name
 from ..core.synthetic_routes import generate_route
 from ..exceptions import AeroNavXError
 
-app = FastAPI(title="AeroNavX API", description="AI aviation SDK API", version="3.0.0")
+app = FastAPI(title="AeroNavX API", description="AI aviation SDK API", version="3.0.1")
 
 
 _semantic_engine = None

@@ -1,7 +1,7 @@
 # AeroNavX Phase-3 Production Readiness Report
 
 ## Scope
-- Package: `aeronavx` with `[hf]` extra (target version 3.0.0)
+- Package: `aeronavx` with `[hf]` extra (target version 3.0.1)
 - Features: semantic search, jet lag, network intelligence, synthetic routing, advanced emissions
 - Architecture: lazy loading, embedding cache, offline mode, env token config, optional FAISS
 
@@ -13,7 +13,7 @@
 
 ## Installation Validation
 - Local base install (clean venv): `pip install .`
-  - Result: ✅ success (aeronavx 3.0.0)
+  - Result: ✅ success (aeronavx 3.0.1)
   - Optional deps not present; `sentence_transformers` missing; `semantic_search` raises ImportError as expected.
 - Local HF install (clean venv): `pip install .[hf]`
   - Result: ✅ success (torch, sentence-transformers, transformers, datasets, etc.)
@@ -105,8 +105,7 @@ Results:
 - Real-model test (3.13, HF download): 1 passed
 
 ## Risks / Gaps / Recommendations
-- PyPI mismatch: published version is 2.0.5 without Phase-3 modules or `hf` extra.
-  - Recommendation: release 3.0.0 with updated extras and README.
+- PyPI alignment: ensure the published version matches 3.0.1 with `hf` extras enabled.
 - Cold-start cost at full dataset scale (84k airports) could be high.
   - Recommendation: consider precomputed embeddings or ANN acceleration (FAISS).
 - Offline mode still logs from sentence-transformers about missing model (noise).
