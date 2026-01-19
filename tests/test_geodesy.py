@@ -1,5 +1,12 @@
 import pytest
-from aeronavx.core.geodesy import initial_bearing, final_bearing, midpoint, intermediate_point, great_circle_path
+
+from aeronavx.core.geodesy import (
+    final_bearing,
+    great_circle_path,
+    initial_bearing,
+    intermediate_point,
+    midpoint,
+)
 
 
 def test_initial_bearing():

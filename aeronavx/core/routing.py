@@ -1,15 +1,14 @@
 import heapq
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
-from ..models.airport import Airport
-from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..core.distance import distance
-from ..core.search import filter_airports
+from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..exceptions import RoutingError
+from ..models.airport import Airport
 from ..utils.constants import DEFAULT_CRUISE_SPEED_KTS, DEFAULT_MAX_LEG_KM
-from ..utils.units import DistanceUnit, convert_distance
 from ..utils.logging import get_logger
-
+from ..utils.units import DistanceUnit, convert_distance
 
 logger = get_logger()
 
@@ -26,7 +25,7 @@ def estimate_flight_time_hours(
         to_airport.latitude_deg,
         to_airport.longitude_deg,
         model=model,
-        unit="nmi"
+        unit="nmi",
     )
 
     return dist_nmi / speed_kts
@@ -65,7 +64,7 @@ def route_distance(
             a2.latitude_deg,
             a2.longitude_deg,
             model=model,
-            unit="km"
+            unit="km",
         )
 
         total_dist_km += dist_km
@@ -151,9 +150,12 @@ def shortest_path(
 
     def heuristic(a: Airport, b: Airport) -> float:
         return distance(
-            a.latitude_deg, a.longitude_deg,
-            b.latitude_deg, b.longitude_deg,
-            model="haversine", unit="km"
+            a.latitude_deg,
+            a.longitude_deg,
+            b.latitude_deg,
+            b.longitude_deg,
+            model="haversine",
+            unit="km",
         )
 
     pq = [(0.0, 0.0, origin_key, [origin])]
@@ -190,4 +192,6 @@ def shortest_path(
 
             heapq.heappush(pq, (new_f_score, new_g_score, neighbor_key, path + [neighbor]))
 
-    raise RoutingError(f"No path found from {origin_code} to {destination_code} with given constraints")
+    raise RoutingError(
+        f"No path found from {origin_code} to {destination_code} with given constraints"
+    )

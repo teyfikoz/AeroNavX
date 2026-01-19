@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence, Union
+from typing import Union
 
-from ..exceptions import RoutingError
-from ..models.airport import Airport
 from ..core.airports import get as get_airport
 from ..core.distance import distance
 from ..core.geodesy import great_circle_path
+from ..exceptions import RoutingError
+from ..models.airport import Airport
 from ..utils.constants import DEFAULT_CRUISE_SPEED_KTS
 
 

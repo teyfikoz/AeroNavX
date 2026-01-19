@@ -2,11 +2,10 @@ import csv
 from pathlib import Path
 from typing import Optional, Union
 
-from ..models.airport import Airport
 from ..exceptions import DataLoadError
+from ..models.airport import Airport
 from ..utils.logging import get_logger
 from ..utils.validators import normalize_airport_code
-
 
 logger = get_logger()
 
@@ -92,13 +91,15 @@ def load_airports(
     """
     global _airports, _iata_index, _icao_index, _id_index, _loaded
 
-    filters_requested = any([
-        include_types,
-        exclude_types,
-        countries,
-        scheduled_service_only,
-        has_iata_only,
-    ])
+    filters_requested = any(
+        [
+            include_types,
+            exclude_types,
+            countries,
+            scheduled_service_only,
+            has_iata_only,
+        ]
+    )
 
     if _loaded and not force_reload and data_path is None and not filters_requested:
         return _airports
@@ -116,7 +117,7 @@ def load_airports(
     skipped = 0
 
     try:
-        with open(data_path, "r", encoding="utf-8") as f:
+        with open(data_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
 
             for row in reader:
@@ -139,7 +140,9 @@ def load_airports(
 
                     iata_code = row.get("iata_code", "").strip().upper() or None
                     gps_code = row.get("gps_code", "").strip().upper() or None
-                    icao_code = row.get("icao_code", "").strip().upper() or None  # OurAirports format
+                    icao_code = (
+                        row.get("icao_code", "").strip().upper() or None
+                    )  # OurAirports format
                     local_code = row.get("local_code", "").strip().upper() or None
 
                     # Use icao_code if gps_code is empty (OurAirports compatibility)

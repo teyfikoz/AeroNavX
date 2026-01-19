@@ -1,5 +1,5 @@
 import aeronavx
-from aeronavx.core.routing import route_distance, estimate_flight_time_h_m
+from aeronavx.core.routing import estimate_flight_time_h_m, route_distance
 
 codes = ["IST", "AMS", "JFK"]
 
@@ -27,6 +27,10 @@ if len(airports) == len(codes):
         dist_km = from_airport.distance_to(to_airport)
         hours, minutes = estimate_flight_time_h_m(from_airport, to_airport)
 
-        print(f"{from_airport.iata_code} → {to_airport.iata_code}: {dist_km:.2f} km, ~{hours}h {minutes}m")
+        message = (
+            f"{from_airport.iata_code} → {to_airport.iata_code}: "
+            f"{dist_km:.2f} km, ~{hours}h {minutes}m"
+        )
+        print(message)
 else:
     print("One or more airports not found")

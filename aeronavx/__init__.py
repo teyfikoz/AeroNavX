@@ -1,60 +1,64 @@
-from .models import Airport, Runway
-from .core.airports import get as get_airport, get_by_iata, get_by_icao, search_by_name as search_airports_by_name
+from .core.airports import get as get_airport
+from .core.airports import get_by_iata, get_by_icao
+from .core.airports import search_by_name as search_airports_by_name
 from .core.distance import distance, distance_km, distance_mi, distance_nmi
-from .core.geodesy import initial_bearing, midpoint, great_circle_path
-from .core.search import nearest_airport, nearest_airports, airports_within_radius
-from .core.routing import estimate_flight_time_hours as estimate_flight_time, route_distance
 from .core.emissions import estimate_co2_kg_by_codes as estimate_co2_kg_for_segment
 from .core.emissions_advanced import (
+    AircraftType,
+    EmissionsResult,
+    FuelType,
+    SafSavings,
     calculate_flight_emissions,
     compare_saf_savings,
-    AircraftType,
-    FuelType,
-    EmissionsResult,
-    SafSavings,
+)
+from .core.geodesy import great_circle_path, initial_bearing, midpoint
+from .core.network_intelligence import (
+    HubScore,
+    NetworkIntelligence,
+    hub_intelligence_score,
+    identify_global_hubs,
 )
 from .core.passenger_experience import (
-    calculate_jet_lag,
     JetLagResult,
     JetLagSeverity,
     TravelDirection,
+    calculate_jet_lag,
 )
-from .core.network_intelligence import (
-    NetworkIntelligence,
-    identify_global_hubs,
-    hub_intelligence_score,
-    HubScore,
-)
-from .core.synthetic_routes import (
-    generate_route,
-    generate_route_by_codes,
-    SyntheticRoute,
-    Waypoint,
-)
-from .core.timezone import get_timezone_offset
-from .core.weather import get_metar, get_taf
+from .core.routing import estimate_flight_time_hours as estimate_flight_time
+from .core.routing import route_distance
 from .core.runways import (
-    get_runways_by_airport,
     get_longest_runway,
     get_paved_runways,
+    get_runways_by_airport,
 )
+from .core.search import airports_within_radius, nearest_airport, nearest_airports
 from .core.statistics import (
-    get_country_stats,
     get_continent_stats,
+    get_country_stats,
     get_global_stats,
     get_top_countries_by_airports,
     get_top_countries_by_large_airports,
 )
+from .core.synthetic_routes import (
+    SyntheticRoute,
+    Waypoint,
+    generate_route,
+    generate_route_by_codes,
+)
+from .core.timezone import get_timezone_offset
+from .core.weather import get_metar, get_taf
 from .exceptions import (
     AeroNavXError,
     AirportNotFoundError,
-    InvalidAirportCodeError,
     DataLoadError,
+    InvalidAirportCodeError,
     RoutingError,
     WeatherDataError,
 )
+from .models import Airport, Runway
 
 _semantic_engine = None
+
 
 def semantic_search(query: str, top_k: int = 5, return_format: str = "auto"):
     global _semantic_engine
@@ -64,8 +68,7 @@ def semantic_search(query: str, top_k: int = 5, return_format: str = "auto"):
             from .hf.semantic_search import SemanticAirportSearch
         except ImportError as exc:
             raise ImportError(
-                "Semantic search requires the HF extra. Install with "
-                "`pip install aeronavx[hf]`."
+                "Semantic search requires the HF extra. Install with " "`pip install aeronavx[hf]`."
             ) from exc
 
         from .core.loader import get_all_airports

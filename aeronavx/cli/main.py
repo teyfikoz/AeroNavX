@@ -4,13 +4,18 @@ import sys
 from .. import __version__
 from ..core.airports import get
 from ..core.distance import distance
-from ..core.search import nearest_airports, search_airports_by_name
 from ..core.emissions import estimate_co2_kg_by_codes
-from ..core.emissions_advanced import calculate_flight_emissions, compare_saf_savings, AircraftType, FuelType
-from ..core.passenger_experience import calculate_jet_lag
+from ..core.emissions_advanced import (
+    AircraftType,
+    FuelType,
+    calculate_flight_emissions,
+    compare_saf_savings,
+)
 from ..core.network_intelligence import identify_global_hubs
-from ..core.synthetic_routes import generate_route
+from ..core.passenger_experience import calculate_jet_lag
 from ..core.routing import estimate_flight_time_hours
+from ..core.search import nearest_airports, search_airports_by_name
+from ..core.synthetic_routes import generate_route
 from ..exceptions import AeroNavXError
 
 
@@ -33,7 +38,7 @@ def cmd_distance(args):
             to_airport.latitude_deg,
             to_airport.longitude_deg,
             model=args.model,
-            unit=args.unit
+            unit=args.unit,
         )
 
         print(f"{from_airport.name} ({args.from_code}) to {to_airport.name} ({args.to_code})")
@@ -66,9 +71,7 @@ def cmd_nearest(args):
             code_str = f" ({', '.join(codes)})" if codes else ""
 
             dist_km = distance(
-                args.lat, args.lon,
-                airport.latitude_deg, airport.longitude_deg,
-                unit="km"
+                args.lat, args.lon, airport.latitude_deg, airport.longitude_deg, unit="km"
             )
 
             print(f"{i}. {airport.name}{code_str}")
@@ -117,10 +120,7 @@ def cmd_search(args):
 def cmd_emissions(args):
     try:
         co2_kg = estimate_co2_kg_by_codes(
-            args.from_code,
-            args.to_code,
-            code_type="auto",
-            model=args.model
+            args.from_code, args.to_code, code_type="auto", model=args.model
         )
 
         from_airport = get(args.from_code, code_type="auto")
@@ -149,11 +149,7 @@ def cmd_flight_time(args):
             print(f"Error: Airport not found: {args.to_code}", file=sys.stderr)
             return 1
 
-        time_hours = estimate_flight_time_hours(
-            from_airport,
-            to_airport,
-            speed_kts=args.speed_kts
-        )
+        time_hours = estimate_flight_time_hours(from_airport, to_airport, speed_kts=args.speed_kts)
 
         hours = int(time_hours)
         minutes = int((time_hours - hours) * 60)
@@ -220,8 +216,7 @@ def cmd_jet_lag(args):
 def cmd_hubs(args):
     try:
         hubs = identify_global_hubs(
-            top_n=args.top_n,
-            scheduled_service_only=not args.include_unscheduled
+            top_n=args.top_n, scheduled_service_only=not args.include_unscheduled
         )
 
         print(f"Top {len(hubs)} hubs:")
@@ -301,10 +296,7 @@ def cmd_synthetic_route(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog="aeronavx",
-        description="AeroNavX - AI aviation SDK CLI"
-    )
+    parser = argparse.ArgumentParser(prog="aeronavx", description="AeroNavX - AI aviation SDK CLI")
     parser.add_argument(
         "--version",
         action="version",
@@ -314,10 +306,21 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     distance_parser = subparsers.add_parser("distance", help="Calculate distance between airports")
-    distance_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
-    distance_parser.add_argument("--to", dest="to_code", required=True, help="Destination airport code")
-    distance_parser.add_argument("--unit", choices=["km", "mi", "nmi"], default="km", help="Distance unit")
-    distance_parser.add_argument("--model", choices=["haversine", "slc", "vincenty"], default="haversine", help="Distance model")
+    distance_parser.add_argument(
+        "--from", dest="from_code", required=True, help="Origin airport code"
+    )
+    distance_parser.add_argument(
+        "--to", dest="to_code", required=True, help="Destination airport code"
+    )
+    distance_parser.add_argument(
+        "--unit", choices=["km", "mi", "nmi"], default="km", help="Distance unit"
+    )
+    distance_parser.add_argument(
+        "--model",
+        choices=["haversine", "slc", "vincenty"],
+        default="haversine",
+        help="Distance model",
+    )
 
     nearest_parser = subparsers.add_parser("nearest", help="Find nearest airports to coordinates")
     nearest_parser.add_argument("--lat", type=float, required=True, help="Latitude")
@@ -329,13 +332,28 @@ def main():
     search_parser.add_argument("--limit", type=int, default=10, help="Maximum results")
 
     emissions_parser = subparsers.add_parser("emissions", help="Estimate CO2 emissions")
-    emissions_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
-    emissions_parser.add_argument("--to", dest="to_code", required=True, help="Destination airport code")
-    emissions_parser.add_argument("--model", choices=["haversine", "slc", "vincenty"], default="haversine", help="Distance model")
+    emissions_parser.add_argument(
+        "--from", dest="from_code", required=True, help="Origin airport code"
+    )
+    emissions_parser.add_argument(
+        "--to", dest="to_code", required=True, help="Destination airport code"
+    )
+    emissions_parser.add_argument(
+        "--model",
+        choices=["haversine", "slc", "vincenty"],
+        default="haversine",
+        help="Distance model",
+    )
 
-    emissions_adv_parser = subparsers.add_parser("emissions-advanced", help="Advanced emissions model")
-    emissions_adv_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
-    emissions_adv_parser.add_argument("--to", dest="to_code", required=True, help="Destination airport code")
+    emissions_adv_parser = subparsers.add_parser(
+        "emissions-advanced", help="Advanced emissions model"
+    )
+    emissions_adv_parser.add_argument(
+        "--from", dest="from_code", required=True, help="Origin airport code"
+    )
+    emissions_adv_parser.add_argument(
+        "--to", dest="to_code", required=True, help="Destination airport code"
+    )
     emissions_adv_parser.add_argument(
         "--aircraft-type",
         default="narrow_body",
@@ -348,8 +366,12 @@ def main():
         choices=[t.value for t in FuelType],
         help="Fuel type",
     )
-    emissions_adv_parser.add_argument("--load-factor", type=float, default=0.85, help="Load factor (0-1)")
-    emissions_adv_parser.add_argument("--saf-percent", type=float, default=0.0, help="SAF blend percentage")
+    emissions_adv_parser.add_argument(
+        "--load-factor", type=float, default=0.85, help="Load factor (0-1)"
+    )
+    emissions_adv_parser.add_argument(
+        "--saf-percent", type=float, default=0.0, help="SAF blend percentage"
+    )
 
     time_parser = subparsers.add_parser("flight-time", help="Estimate flight time")
     time_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
@@ -361,8 +383,12 @@ def main():
     semantic_parser.add_argument("--top-k", type=int, default=5, help="Number of results")
 
     jet_lag_parser = subparsers.add_parser("jet-lag", help="Jet lag analysis")
-    jet_lag_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
-    jet_lag_parser.add_argument("--to", dest="to_code", required=True, help="Destination airport code")
+    jet_lag_parser.add_argument(
+        "--from", dest="from_code", required=True, help="Origin airport code"
+    )
+    jet_lag_parser.add_argument(
+        "--to", dest="to_code", required=True, help="Destination airport code"
+    )
     jet_lag_parser.add_argument("--age", type=int, default=30, help="Passenger age")
 
     hubs_parser = subparsers.add_parser("hubs", help="Identify global hubs")
@@ -375,9 +401,13 @@ def main():
 
     route_parser = subparsers.add_parser("synthetic-route", help="Generate synthetic route")
     route_parser.add_argument("--from", dest="from_code", required=True, help="Origin airport code")
-    route_parser.add_argument("--to", dest="to_code", required=True, help="Destination airport code")
+    route_parser.add_argument(
+        "--to", dest="to_code", required=True, help="Destination airport code"
+    )
     route_parser.add_argument("--waypoints", type=int, default=12, help="Number of waypoints")
-    route_parser.add_argument("--speed-kts", type=float, default=450.0, help="Cruise speed in knots")
+    route_parser.add_argument(
+        "--speed-kts", type=float, default=450.0, help="Cruise speed in knots"
+    )
 
     args = parser.parse_args()
 

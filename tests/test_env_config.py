@@ -22,6 +22,7 @@ def _reload_config(monkeypatch, env):
         del sys.modules["aeronavx.hf.config"]
 
     import aeronavx.hf.config as config
+
     return importlib.reload(config)
 
 

@@ -101,38 +101,39 @@ class Runway:
         """Check if runway surface is paved."""
         if not self.surface:
             return False
-        paved_surfaces = ['ASPH', 'CONC', 'ASPH-CONC', 'CONC-ASPH', 'PEM', 'BIT']
+        paved_surfaces = ["ASPH", "CONC", "ASPH-CONC", "CONC-ASPH", "PEM", "BIT"]
         return any(s in self.surface.upper() for s in paved_surfaces)
 
     def as_dict(self) -> dict:
         """Convert runway to dictionary."""
         return {
-            'id': self.id,
-            'airport_ref': self.airport_ref,
-            'airport_ident': self.airport_ident,
-            'designation': self.designation,
-            'length_ft': self.length_ft,
-            'width_ft': self.width_ft,
-            'length_m': self.length_m,
-            'width_m': self.width_m,
-            'surface': self.surface,
-            'lighted': self.lighted,
-            'closed': self.closed,
-            'is_operational': self.is_operational,
-            'is_paved': self.is_paved,
-            'le_ident': self.le_ident,
-            'le_latitude_deg': self.le_latitude_deg,
-            'le_longitude_deg': self.le_longitude_deg,
-            'le_elevation_ft': self.le_elevation_ft,
-            'le_heading_degT': self.le_heading_degT,
-            'he_ident': self.he_ident,
-            'he_latitude_deg': self.he_latitude_deg,
-            'he_longitude_deg': self.he_longitude_deg,
-            'he_elevation_ft': self.he_elevation_ft,
-            'he_heading_degT': self.he_heading_degT,
+            "id": self.id,
+            "airport_ref": self.airport_ref,
+            "airport_ident": self.airport_ident,
+            "designation": self.designation,
+            "length_ft": self.length_ft,
+            "width_ft": self.width_ft,
+            "length_m": self.length_m,
+            "width_m": self.width_m,
+            "surface": self.surface,
+            "lighted": self.lighted,
+            "closed": self.closed,
+            "is_operational": self.is_operational,
+            "is_paved": self.is_paved,
+            "le_ident": self.le_ident,
+            "le_latitude_deg": self.le_latitude_deg,
+            "le_longitude_deg": self.le_longitude_deg,
+            "le_elevation_ft": self.le_elevation_ft,
+            "le_heading_degT": self.le_heading_degT,
+            "he_ident": self.he_ident,
+            "he_latitude_deg": self.he_latitude_deg,
+            "he_longitude_deg": self.he_longitude_deg,
+            "he_elevation_ft": self.he_elevation_ft,
+            "he_heading_degT": self.he_heading_degT,
         }
 
     def __repr__(self) -> str:
         """String representation of runway."""
         length_str = f"{self.length_ft:.0f}ft" if self.length_ft else "unknown"
-        return f"<Runway {self.airport_ident} {self.designation}: {length_str}, {self.surface or 'unknown surface'}>"
+        surface = self.surface or "unknown surface"
+        return f"<Runway {self.airport_ident} {self.designation}: {length_str}, {surface}>"

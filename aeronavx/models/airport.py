@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any, Optional
 
 
@@ -31,22 +31,21 @@ class Airport:
 
     def distance_to(self, other: "Airport", model: str = "haversine") -> float:
         from ..core.distance import distance as calc_distance
+
         return calc_distance(
             self.latitude_deg,
             self.longitude_deg,
             other.latitude_deg,
             other.longitude_deg,
             model=model,
-            unit="km"
+            unit="km",
         )
 
     def bearing_to(self, other: "Airport") -> float:
         from ..core.geodesy import initial_bearing
+
         return initial_bearing(
-            self.latitude_deg,
-            self.longitude_deg,
-            other.latitude_deg,
-            other.longitude_deg
+            self.latitude_deg, self.longitude_deg, other.latitude_deg, other.longitude_deg
         )
 
     def __str__(self) -> str:

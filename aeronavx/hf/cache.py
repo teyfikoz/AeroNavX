@@ -5,7 +5,6 @@ from typing import Any, Optional
 
 from .utils import sanitize_model_id
 
-
 CACHE_VERSION = "v1"
 
 

@@ -1,10 +1,10 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
+from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..models.airport import Airport
-from ..core.loader import get_all_airports, get_airport_by_iata, get_airport_by_icao
-from ..utils.spatial_index import build_spatial_index
 from ..utils.logging import get_logger
-
+from ..utils.spatial_index import build_spatial_index
 
 logger = get_logger()
 
@@ -13,6 +13,7 @@ _spatial_index = None
 
 try:
     from rapidfuzz import fuzz, process
+
     HAS_RAPIDFUZZ = True
 except ImportError:
     HAS_RAPIDFUZZ = False
@@ -38,12 +39,7 @@ def search_airports_by_name(query: str, limit: int = 20) -> list[Airport]:
 
     if HAS_RAPIDFUZZ:
         names = [a.name for a in airports]
-        results = process.extract(
-            query,
-            names,
-            scorer=fuzz.WRatio,
-            limit=limit
-        )
+        results = process.extract(query, names, scorer=fuzz.WRatio, limit=limit)
         return [airports[idx] for _, _, idx in results]
     else:
         exact_matches = [a for a in airports if query_lower in a.name.lower()]
@@ -86,8 +82,7 @@ def filter_airports(
     if municipality:
         municipality_lower = municipality.lower()
         results = [
-            a for a in results
-            if a.municipality and municipality_lower in a.municipality.lower()
+            a for a in results if a.municipality and municipality_lower in a.municipality.lower()
         ]
 
     if types:
@@ -109,10 +104,7 @@ def airports_in_region(region_code: str) -> list[Airport]:
 
 
 def nearest_airports(
-    lat: float,
-    lon: float,
-    n: int = 1,
-    max_distance_km: Optional[float] = None
+    lat: float, lon: float, n: int = 1, max_distance_km: Optional[float] = None
 ) -> list[Airport]:
     index = _get_spatial_index()
     return index.nearest(lat, lon, n, max_distance_km)
@@ -123,7 +115,9 @@ def airports_within_radius(lat: float, lon: float, radius_km: float) -> list[Air
     return index.within_radius(lat, lon, radius_km)
 
 
-def nearest_airport(lat: float, lon: float, max_distance_km: Optional[float] = None) -> Optional[Airport]:
+def nearest_airport(
+    lat: float, lon: float, max_distance_km: Optional[float] = None
+) -> Optional[Airport]:
     """
     Find the single nearest airport to a location.
 

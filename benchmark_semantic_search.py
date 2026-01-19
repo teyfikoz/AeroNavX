@@ -21,7 +21,10 @@ def main():
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--sample-size", type=int, default=2000)
     parser.add_argument("--cache-dir", default=os.getenv("AERONAVX_CACHE", "~/.aeronavx"))
-    parser.add_argument("--model", default=os.getenv("AERONAVX_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2"))
+    parser.add_argument(
+        "--model",
+        default=os.getenv("AERONAVX_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
+    )
     args = parser.parse_args()
 
     cache_dir = Path(args.cache_dir).expanduser()
@@ -55,7 +58,7 @@ def main():
     warm_search = t5 - t4
 
     t6 = time.perf_counter()
-    cached_searcher = SemanticAirportSearch(
+    SemanticAirportSearch(
         airports,
         model_name=args.model,
         model=searcher.model,

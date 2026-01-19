@@ -150,6 +150,7 @@ def test_return_format_auto_list_dataframe():
     pandas = None
     try:
         import pandas as pd
+
         pandas = pd
     except ImportError:
         pass

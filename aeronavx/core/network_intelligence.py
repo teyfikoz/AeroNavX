@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Optional, Sequence
+from typing import Optional
 
-from ..models.airport import Airport
 from ..core.airports import get as get_airport
 from ..core.loader import get_all_airports
+from ..models.airport import Airport
 from ..utils.spatial_index import build_spatial_index
 
 
@@ -81,7 +82,8 @@ def identify_global_hubs(
         airports = get_all_airports()
 
     filtered = [
-        a for a in airports
+        a
+        for a in airports
         if a.type in ("large_airport", "medium_airport")
         and (a.scheduled_service or not scheduled_service_only)
     ]

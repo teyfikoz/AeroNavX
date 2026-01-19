@@ -2,16 +2,16 @@ from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from ..models.airport import Airport
 from ..core.loader import get_airport_by_iata, get_airport_by_icao
+from ..models.airport import Airport
 from ..utils.logging import get_logger
-
 
 logger = get_logger()
 
 
 try:
     from timezonefinder import TimezoneFinder
+
     _tz_finder = TimezoneFinder()
     HAS_TIMEZONEFINDER = True
 except ImportError:
@@ -25,10 +25,7 @@ def get_timezone_for_airport(airport: Airport) -> Optional[str]:
         return None
 
     try:
-        tz_name = _tz_finder.timezone_at(
-            lat=airport.latitude_deg,
-            lng=airport.longitude_deg
-        )
+        tz_name = _tz_finder.timezone_at(lat=airport.latitude_deg, lng=airport.longitude_deg)
         return tz_name
     except Exception as e:
         logger.debug(f"Could not determine timezone for {airport.name}: {e}")
@@ -83,8 +80,7 @@ def get_timezone_for_code(code: str, code_type: str = "iata") -> Optional[str]:
 
 
 def local_time_for_airport(
-    airport: Airport,
-    dt_utc: Optional[datetime] = None
+    airport: Airport, dt_utc: Optional[datetime] = None
 ) -> Optional[datetime]:
     tz_name = get_timezone_for_airport(airport)
 
@@ -110,9 +106,7 @@ def local_time_for_airport(
 
 
 def local_time_for_code(
-    code: str,
-    code_type: str = "iata",
-    dt_utc: Optional[datetime] = None
+    code: str, code_type: str = "iata", dt_utc: Optional[datetime] = None
 ) -> Optional[datetime]:
     if code_type == "iata":
         airport = get_airport_by_iata(code)

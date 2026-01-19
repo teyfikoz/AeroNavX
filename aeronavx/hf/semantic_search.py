@@ -8,7 +8,6 @@ from .config import CACHE_DIR, EMBED_MODEL, HF_TOKEN, USE_LOCAL_ONLY
 from .index import AirportIndex
 from .utils import try_import_pandas
 
-
 ReturnFormat = Literal["auto", "dataframe", "list"]
 
 
@@ -49,21 +48,22 @@ def _load_sentence_transformer(
     except Exception as exc:
         message = str(exc).lower()
         if local_only:
-            raise RuntimeError(
-                f"Offline mode enabled and model '{model_name}' is not available in the local cache. "
+            message = (
+                f"Offline mode enabled and model '{model_name}' "
+                "is not available in the local cache. "
                 "Disable offline mode or pre-download the model."
-            ) from exc
+            )
+            raise RuntimeError(message) from exc
         if token and ("401" in message or "unauthorized" in message or "forbidden" in message):
             raise RuntimeError(
                 "Hugging Face token is invalid or lacks access to the requested model."
             ) from exc
         if "404" in message or ("not found" in message and "model" in message):
-            raise RuntimeError(
-                f"Hugging Face model '{model_name}' was not found."
-            ) from exc
+            raise RuntimeError(f"Hugging Face model '{model_name}' was not found.") from exc
         if "connection" in message or "timed out" in message or "network" in message:
             raise RuntimeError(
-                "Unable to download model. Check network access or enable offline mode with a cached model."
+                "Unable to download model. Check network access or enable offline mode "
+                "with a cached model."
             ) from exc
         raise
 

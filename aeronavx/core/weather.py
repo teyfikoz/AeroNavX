@@ -5,9 +5,9 @@ from ..exceptions import WeatherDataError
 from ..utils.logging import get_logger
 from ..utils.validators import is_valid_icao
 
-
 try:
     import requests
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
@@ -21,7 +21,7 @@ TAF_URL_TEMPLATE = "https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/{icao
 
 
 def _sanitize_icao(icao: str) -> str:
-    icao_clean = re.sub(r'[^A-Z0-9]', '', icao.upper())
+    icao_clean = re.sub(r"[^A-Z0-9]", "", icao.upper())
 
     if not is_valid_icao(icao_clean):
         raise WeatherDataError(f"Invalid ICAO code: {icao}")
@@ -46,7 +46,7 @@ def get_metar(icao: str, timeout: float = 5.0) -> Optional[str]:
 
         response.raise_for_status()
 
-        lines = response.text.strip().split('\n')
+        lines = response.text.strip().split("\n")
 
         if len(lines) >= 2:
             return lines[1].strip()
@@ -56,7 +56,7 @@ def get_metar(icao: str, timeout: float = 5.0) -> Optional[str]:
     except WeatherDataError:
         raise
     except Exception as e:
-        if HAS_REQUESTS and hasattr(e, '__module__') and 'requests' in e.__module__:
+        if HAS_REQUESTS and hasattr(e, "__module__") and "requests" in e.__module__:
             logger.debug(f"Failed to fetch METAR for {icao}: {e}")
         else:
             logger.debug(f"Unexpected error fetching METAR: {e}")
@@ -80,17 +80,17 @@ def get_taf(icao: str, timeout: float = 5.0) -> Optional[str]:
 
         response.raise_for_status()
 
-        lines = response.text.strip().split('\n')
+        lines = response.text.strip().split("\n")
 
         if len(lines) >= 2:
-            return '\n'.join(lines[1:]).strip()
+            return "\n".join(lines[1:]).strip()
 
         return response.text.strip()
 
     except WeatherDataError:
         raise
     except Exception as e:
-        if HAS_REQUESTS and hasattr(e, '__module__') and 'requests' in e.__module__:
+        if HAS_REQUESTS and hasattr(e, "__module__") and "requests" in e.__module__:
             logger.debug(f"Failed to fetch TAF for {icao}: {e}")
         else:
             logger.debug(f"Unexpected error fetching TAF: {e}")

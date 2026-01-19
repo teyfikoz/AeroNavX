@@ -17,6 +17,7 @@ def test_offline_mode_missing_cache_raises(monkeypatch, tmp_path):
         del sys.modules["aeronavx.hf.semantic_search"]
 
     import aeronavx.hf.semantic_search as semantic_search
+
     importlib.reload(semantic_search)
 
     with pytest.raises(RuntimeError, match="Offline mode enabled"):
@@ -35,6 +36,7 @@ def test_invalid_token_error(monkeypatch, tmp_path):
         del sys.modules["aeronavx.hf.semantic_search"]
 
     import aeronavx.hf.semantic_search as semantic_search
+
     importlib.reload(semantic_search)
 
     with pytest.raises(RuntimeError, match="token is invalid"):
@@ -53,6 +55,7 @@ def test_network_error(monkeypatch, tmp_path):
         del sys.modules["aeronavx.hf.semantic_search"]
 
     import aeronavx.hf.semantic_search as semantic_search
+
     importlib.reload(semantic_search)
 
     with pytest.raises(RuntimeError, match="Unable to download model"):

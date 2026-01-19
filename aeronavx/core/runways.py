@@ -4,10 +4,9 @@ import csv
 from pathlib import Path
 from typing import Optional, Union
 
-from ..models.runway import Runway
 from ..exceptions import DataLoadError
+from ..models.runway import Runway
 from ..utils.logging import get_logger
-
 
 logger = get_logger()
 
@@ -96,7 +95,7 @@ def load_runways(
     skipped = 0
 
     try:
-        with open(data_path, "r", encoding="utf-8") as f:
+        with open(data_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
 
             for row in reader:
@@ -120,13 +119,17 @@ def load_runways(
                         le_longitude_deg=_parse_float(row.get("le_longitude_deg", "")),
                         le_elevation_ft=_parse_float(row.get("le_elevation_ft", "")),
                         le_heading_degT=_parse_float(row.get("le_heading_degT", "")),
-                        le_displaced_threshold_ft=_parse_float(row.get("le_displaced_threshold_ft", "")),
+                        le_displaced_threshold_ft=_parse_float(
+                            row.get("le_displaced_threshold_ft", "")
+                        ),
                         he_ident=row.get("he_ident", "").strip() or None,
                         he_latitude_deg=_parse_float(row.get("he_latitude_deg", "")),
                         he_longitude_deg=_parse_float(row.get("he_longitude_deg", "")),
                         he_elevation_ft=_parse_float(row.get("he_elevation_ft", "")),
                         he_heading_degT=_parse_float(row.get("he_heading_degT", "")),
-                        he_displaced_threshold_ft=_parse_float(row.get("he_displaced_threshold_ft", "")),
+                        he_displaced_threshold_ft=_parse_float(
+                            row.get("he_displaced_threshold_ft", "")
+                        ),
                     )
 
                     runways.append(runway)
@@ -216,7 +219,7 @@ def get_longest_runway(airport_ident: str) -> Optional[Runway]:
     return max(
         (r for r in runways if r.length_ft is not None),
         key=lambda r: r.length_ft or 0,
-        default=None
+        default=None,
     )
 
 

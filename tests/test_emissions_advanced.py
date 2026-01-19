@@ -1,10 +1,10 @@
 import pytest
 
 from aeronavx.core.emissions_advanced import (
-    calculate_flight_emissions,
-    compare_saf_savings,
     AircraftType,
     FuelType,
+    calculate_flight_emissions,
+    compare_saf_savings,
 )
 
 

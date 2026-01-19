@@ -1,21 +1,22 @@
 from fastapi import FastAPI, HTTPException, Query
+
 from ..core.airports import get
 from ..core.distance import distance
-from ..core.search import nearest_airports, search_airports_by_name
-from ..core.routing import estimate_flight_time_hours
 from ..core.emissions import estimate_co2_kg_by_codes
-from ..core.passenger_experience import calculate_jet_lag
+from ..core.emissions_advanced import (
+    AircraftType,
+    FuelType,
+    calculate_flight_emissions,
+    compare_saf_savings,
+)
 from ..core.network_intelligence import identify_global_hubs
-from ..core.emissions_advanced import calculate_flight_emissions, compare_saf_savings, AircraftType, FuelType
+from ..core.passenger_experience import calculate_jet_lag
+from ..core.routing import estimate_flight_time_hours
+from ..core.search import nearest_airports, search_airports_by_name
 from ..core.synthetic_routes import generate_route
 from ..exceptions import AeroNavXError
 
-
-app = FastAPI(
-    title="AeroNavX API",
-    description="AI aviation SDK API",
-    version="3.0.0"
-)
+app = FastAPI(title="AeroNavX API", description="AI aviation SDK API", version="3.0.0")
 
 
 _semantic_engine = None
@@ -29,9 +30,13 @@ def _get_semantic_engine():
         except ImportError as exc:
             raise HTTPException(
                 status_code=501,
-                detail="Semantic search requires the HF extra. Install with `pip install aeronavx[hf]`."
+                detail=(
+                    "Semantic search requires the HF extra. "
+                    "Install with `pip install aeronavx[hf]`."
+                ),
             ) from exc
         from ..core.loader import get_all_airports
+
         _semantic_engine = SemanticAirportSearch(get_all_airports())
     return _semantic_engine
 
@@ -42,10 +47,7 @@ async def health():
 
 
 @app.get("/airport/{code}")
-async def get_airport(
-    code: str,
-    code_type: str = Query("auto", regex="^(iata|icao|auto)$")
-):
+async def get_airport(code: str, code_type: str = Query("auto", regex="^(iata|icao|auto)$")):
     try:
         airport = get(code, code_type=code_type)
 
@@ -64,7 +66,7 @@ async def calculate_distance(
     to_code: str = Query(..., alias="to"),
     code_type: str = Query("auto", regex="^(iata|icao|auto)$"),
     model: str = Query("haversine", regex="^(haversine|slc|vincenty)$"),
-    unit: str = Query("km", regex="^(km|mi|nmi)$")
+    unit: str = Query("km", regex="^(km|mi|nmi)$"),
 ):
     try:
         from_airport = get(from_code, code_type=code_type)
@@ -82,7 +84,7 @@ async def calculate_distance(
             to_airport.latitude_deg,
             to_airport.longitude_deg,
             model=model,
-            unit=unit
+            unit=unit,
         )
 
         return {
@@ -90,7 +92,7 @@ async def calculate_distance(
             "to": to_airport.as_dict(),
             "distance": dist,
             "unit": unit,
-            "model": model
+            "model": model,
         }
 
     except AeroNavXError as e:
@@ -101,7 +103,7 @@ async def calculate_distance(
 async def find_nearest(
     lat: float = Query(..., ge=-90, le=90),
     lon: float = Query(..., ge=-180, le=180),
-    n: int = Query(5, ge=1, le=100)
+    n: int = Query(5, ge=1, le=100),
 ):
     try:
         airports = nearest_airports(lat, lon, n=n)
@@ -109,7 +111,7 @@ async def find_nearest(
         return {
             "query": {"lat": lat, "lon": lon},
             "count": len(airports),
-            "airports": [a.as_dict() for a in airports]
+            "airports": [a.as_dict() for a in airports],
         }
 
     except AeroNavXError as e:
@@ -117,18 +119,11 @@ async def find_nearest(
 
 
 @app.get("/search")
-async def search(
-    q: str = Query(..., min_length=1),
-    limit: int = Query(20, ge=1, le=100)
-):
+async def search(q: str = Query(..., min_length=1), limit: int = Query(20, ge=1, le=100)):
     try:
         airports = search_airports_by_name(q, limit=limit)
 
-        return {
-            "query": q,
-            "count": len(airports),
-            "airports": [a.as_dict() for a in airports]
-        }
+        return {"query": q, "count": len(airports), "airports": [a.as_dict() for a in airports]}
 
     except AeroNavXError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -138,7 +133,7 @@ async def search(
 async def flight_time(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
-    speed_kts: float = Query(450.0, ge=100, le=1000)
+    speed_kts: float = Query(450.0, ge=100, le=1000),
 ):
     try:
         from_airport = get(from_code, code_type="auto")
@@ -160,7 +155,7 @@ async def flight_time(
             "to": to_airport.as_dict(),
             "speed_kts": speed_kts,
             "time_hours": time_hours,
-            "time_formatted": f"{hours}h {minutes}m"
+            "time_formatted": f"{hours}h {minutes}m",
         }
 
     except AeroNavXError as e:
@@ -171,7 +166,7 @@ async def flight_time(
 async def emissions(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
-    model: str = Query("haversine", regex="^(haversine|slc|vincenty)$")
+    model: str = Query("haversine", regex="^(haversine|slc|vincenty)$"),
 ):
     try:
         co2_kg = estimate_co2_kg_by_codes(from_code, to_code, code_type="auto", model=model)
@@ -183,7 +178,7 @@ async def emissions(
             "from": from_airport.as_dict(),
             "to": to_airport.as_dict(),
             "co2_kg_per_passenger": co2_kg,
-            "model": model
+            "model": model,
         }
 
     except AeroNavXError as e:
@@ -342,6 +337,7 @@ async def synthetic_route(
 
 def run_server(host: str = "0.0.0.0", port: int = 8000):
     import uvicorn
+
     uvicorn.run(app, host=host, port=port)
 
 

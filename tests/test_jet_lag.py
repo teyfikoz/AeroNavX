@@ -1,6 +1,6 @@
 import pytest
 
-from aeronavx.core.passenger_experience import calculate_jet_lag, JetLagSeverity, TravelDirection
+from aeronavx.core.passenger_experience import JetLagSeverity, TravelDirection, calculate_jet_lag
 from aeronavx.models.airport import Airport
 
 

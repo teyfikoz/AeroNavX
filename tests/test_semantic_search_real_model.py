@@ -200,7 +200,9 @@ def test_semantic_search_real_model_rankings(tmp_path):
     searcher = SemanticAirportSearch(
         airports,
         cache_dir=tmp_path,
-        token=os.getenv("HF_TOKEN") or os.getenv("HF_API_TOKEN") or os.getenv("HUGGINGFACE_HUB_TOKEN"),
+        token=os.getenv("HF_TOKEN")
+        or os.getenv("HF_API_TOKEN")
+        or os.getenv("HUGGINGFACE_HUB_TOKEN"),
     )
 
     queries = {

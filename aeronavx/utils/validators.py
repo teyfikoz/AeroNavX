@@ -4,13 +4,13 @@ import re
 def is_valid_iata(code: str) -> bool:
     if not isinstance(code, str):
         return False
-    return bool(re.match(r'^[A-Z]{3}$', code.strip().upper()))
+    return bool(re.match(r"^[A-Z]{3}$", code.strip().upper()))
 
 
 def is_valid_icao(code: str) -> bool:
     if not isinstance(code, str):
         return False
-    return bool(re.match(r'^[A-Z]{4}$', code.strip().upper()))
+    return bool(re.match(r"^[A-Z]{4}$", code.strip().upper()))
 
 
 def validate_coordinates(lat: float, lon: float) -> None:

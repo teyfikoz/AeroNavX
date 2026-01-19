@@ -1,10 +1,9 @@
 from collections import defaultdict
 from typing import Optional
 
-from ..models.airport import Airport
 from ..core.loader import get_all_airports
 from ..core.search import nearest_airports
-
+from ..models.airport import Airport
 
 _precomputed_neighbors: Optional[dict[str, list[Airport]]] = None
 
@@ -45,9 +44,7 @@ def airports_per_type() -> dict[str, int]:
 def highest_elevation_airports(n: int = 10) -> list[Airport]:
     airports = get_all_airports()
 
-    airports_with_elevation = [
-        a for a in airports if a.elevation_ft is not None
-    ]
+    airports_with_elevation = [a for a in airports if a.elevation_ft is not None]
 
     airports_with_elevation.sort(key=lambda a: a.elevation_ft, reverse=True)
 
@@ -57,9 +54,7 @@ def highest_elevation_airports(n: int = 10) -> list[Airport]:
 def lowest_elevation_airports(n: int = 10) -> list[Airport]:
     airports = get_all_airports()
 
-    airports_with_elevation = [
-        a for a in airports if a.elevation_ft is not None
-    ]
+    airports_with_elevation = [a for a in airports if a.elevation_ft is not None]
 
     airports_with_elevation.sort(key=lambda a: a.elevation_ft)
 
@@ -94,15 +89,9 @@ def precompute_nearest_neighbors(k: int = 5) -> dict[str, list[Airport]]:
     _precomputed_neighbors = {}
 
     for airport in airports:
-        neighbors = nearest_airports(
-            airport.latitude_deg,
-            airport.longitude_deg,
-            n=k + 1
-        )
+        neighbors = nearest_airports(airport.latitude_deg, airport.longitude_deg, n=k + 1)
 
-        neighbors_filtered = [
-            a for a in neighbors if a is not airport
-        ][:k]
+        neighbors_filtered = [a for a in neighbors if a is not airport][:k]
 
         key = airport.iata_code or airport.gps_code or str(airport.id)
         _precomputed_neighbors[key] = neighbors_filtered

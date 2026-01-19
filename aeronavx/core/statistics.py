@@ -1,13 +1,11 @@
 """Statistical analysis for airports and runways."""
 
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from typing import Optional
 
 from . import loader
 from . import runways as runway_loader
-from ..models.airport import Airport
-from ..models.runway import Runway
 
 
 @dataclass
@@ -29,17 +27,17 @@ class CountryStats:
     def as_dict(self) -> dict:
         """Convert to dictionary."""
         return {
-            'iso_country': self.iso_country,
-            'total_airports': self.total_airports,
-            'large_airports': self.large_airports,
-            'medium_airports': self.medium_airports,
-            'small_airports': self.small_airports,
-            'heliports': self.heliports,
-            'airports_with_iata': self.airports_with_iata,
-            'scheduled_service_count': self.scheduled_service_count,
-            'total_runways': self.total_runways,
-            'longest_runway_ft': self.longest_runway_ft,
-            'avg_runway_length_ft': self.avg_runway_length_ft,
+            "iso_country": self.iso_country,
+            "total_airports": self.total_airports,
+            "large_airports": self.large_airports,
+            "medium_airports": self.medium_airports,
+            "small_airports": self.small_airports,
+            "heliports": self.heliports,
+            "airports_with_iata": self.airports_with_iata,
+            "scheduled_service_count": self.scheduled_service_count,
+            "total_runways": self.total_runways,
+            "longest_runway_ft": self.longest_runway_ft,
+            "avg_runway_length_ft": self.avg_runway_length_ft,
         }
 
 
@@ -59,14 +57,14 @@ class ContinentStats:
     def as_dict(self) -> dict:
         """Convert to dictionary."""
         return {
-            'continent': self.continent,
-            'total_airports': self.total_airports,
-            'countries_count': self.countries_count,
-            'large_airports': self.large_airports,
-            'medium_airports': self.medium_airports,
-            'small_airports': self.small_airports,
-            'total_runways': self.total_runways,
-            'airports_with_scheduled_service': self.airports_with_scheduled_service,
+            "continent": self.continent,
+            "total_airports": self.total_airports,
+            "countries_count": self.countries_count,
+            "large_airports": self.large_airports,
+            "medium_airports": self.medium_airports,
+            "small_airports": self.small_airports,
+            "total_runways": self.total_runways,
+            "airports_with_scheduled_service": self.airports_with_scheduled_service,
         }
 
 
@@ -94,22 +92,22 @@ class GlobalStats:
     def as_dict(self) -> dict:
         """Convert to dictionary."""
         return {
-            'total_airports': self.total_airports,
-            'total_runways': self.total_runways,
-            'countries_count': self.countries_count,
-            'continents_count': self.continents_count,
-            'large_airports': self.large_airports,
-            'medium_airports': self.medium_airports,
-            'small_airports': self.small_airports,
-            'heliports': self.heliports,
-            'seaplane_bases': self.seaplane_bases,
-            'closed_airports': self.closed_airports,
-            'airports_with_iata': self.airports_with_iata,
-            'airports_with_scheduled_service': self.airports_with_scheduled_service,
-            'total_runway_length_miles': self.total_runway_length_miles,
-            'avg_runway_length_ft': self.avg_runway_length_ft,
-            'longest_runway_ft': self.longest_runway_ft,
-            'shortest_runway_ft': self.shortest_runway_ft,
+            "total_airports": self.total_airports,
+            "total_runways": self.total_runways,
+            "countries_count": self.countries_count,
+            "continents_count": self.continents_count,
+            "large_airports": self.large_airports,
+            "medium_airports": self.medium_airports,
+            "small_airports": self.small_airports,
+            "heliports": self.heliports,
+            "seaplane_bases": self.seaplane_bases,
+            "closed_airports": self.closed_airports,
+            "airports_with_iata": self.airports_with_iata,
+            "airports_with_scheduled_service": self.airports_with_scheduled_service,
+            "total_runway_length_miles": self.total_runway_length_miles,
+            "avg_runway_length_ft": self.avg_runway_length_ft,
+            "longest_runway_ft": self.longest_runway_ft,
+            "shortest_runway_ft": self.shortest_runway_ft,
         }
 
 
@@ -158,10 +156,10 @@ def get_country_stats(iso_country: str) -> Optional[CountryStats]:
     return CountryStats(
         iso_country=iso_country.upper(),
         total_airports=len(country_airports),
-        large_airports=type_counter.get('large_airport', 0),
-        medium_airports=type_counter.get('medium_airport', 0),
-        small_airports=type_counter.get('small_airport', 0),
-        heliports=type_counter.get('heliport', 0),
+        large_airports=type_counter.get("large_airport", 0),
+        medium_airports=type_counter.get("medium_airport", 0),
+        small_airports=type_counter.get("small_airport", 0),
+        heliports=type_counter.get("heliport", 0),
         airports_with_iata=iata_count,
         scheduled_service_count=scheduled_count,
         total_runways=len(country_runways),
@@ -209,9 +207,9 @@ def get_continent_stats(continent: str) -> Optional[ContinentStats]:
         continent=continent.upper(),
         total_airports=len(continent_airports),
         countries_count=len(countries),
-        large_airports=type_counter.get('large_airport', 0),
-        medium_airports=type_counter.get('medium_airport', 0),
-        small_airports=type_counter.get('small_airport', 0),
+        large_airports=type_counter.get("large_airport", 0),
+        medium_airports=type_counter.get("medium_airport", 0),
+        small_airports=type_counter.get("small_airport", 0),
         total_runways=len(continent_runways),
         airports_with_scheduled_service=scheduled_count,
     )
@@ -242,7 +240,7 @@ def get_global_stats() -> GlobalStats:
     continents = {a.continent for a in airports if a.continent}
 
     # Count closed airports
-    closed_count = sum(1 for a in airports if a.type == 'closed')
+    closed_count = sum(1 for a in airports if a.type == "closed")
 
     # Count IATA codes
     iata_count = sum(1 for a in airports if a.iata_code)
@@ -262,11 +260,11 @@ def get_global_stats() -> GlobalStats:
         total_runways=len(runways),
         countries_count=len(countries),
         continents_count=len(continents),
-        large_airports=type_counter.get('large_airport', 0),
-        medium_airports=type_counter.get('medium_airport', 0),
-        small_airports=type_counter.get('small_airport', 0),
-        heliports=type_counter.get('heliport', 0),
-        seaplane_bases=type_counter.get('seaplane_base', 0),
+        large_airports=type_counter.get("large_airport", 0),
+        medium_airports=type_counter.get("medium_airport", 0),
+        small_airports=type_counter.get("small_airport", 0),
+        heliports=type_counter.get("heliport", 0),
+        seaplane_bases=type_counter.get("seaplane_base", 0),
         closed_airports=closed_count,
         airports_with_iata=iata_count,
         airports_with_scheduled_service=scheduled_count,
@@ -318,6 +316,6 @@ def get_top_countries_by_large_airports(n: int = 10) -> list[tuple[str, int]]:
         CN: 234 large airports
     """
     airports = loader.load_airports()
-    large_airports = [a for a in airports if a.type == 'large_airport']
+    large_airports = [a for a in airports if a.type == "large_airport"]
     country_counter = Counter(a.iso_country for a in large_airports if a.iso_country)
     return country_counter.most_common(n)

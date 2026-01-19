@@ -1,16 +1,19 @@
 from typing import Literal, Optional
 
-from ..models.airport import Airport
 from ..core.loader import (
     get_airport_by_iata,
     get_airport_by_icao,
+)
+from ..core.loader import (
     get_all_airports as loader_get_all,
 )
 from ..core.search import (
-    search_airports_by_name as search_by_name_impl,
     airports_within_radius as nearby_impl,
 )
-
+from ..core.search import (
+    search_airports_by_name as search_by_name_impl,
+)
+from ..models.airport import Airport
 
 CodeType = Literal["iata", "icao", "auto"]
 

@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Union
 
-from ..models.airport import Airport
-from ..core.timezone import get_timezone_offset
 from ..core.airports import get as get_airport
+from ..core.timezone import get_timezone_offset
 from ..exceptions import AirportNotFoundError
+from ..models.airport import Airport
 
 
 class TravelDirection(Enum):
