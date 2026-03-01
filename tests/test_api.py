@@ -4,17 +4,16 @@ import os
 from unittest.mock import patch
 
 import pytest
-from fastapi.testclient import TestClient
+
+fastapi = pytest.importorskip("fastapi", reason="fastapi not installed")
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def _reset_api_state():
     """Reset module-level state between tests."""
-    import importlib
-
     import aeronavx.api.server as srv_module
 
-    # Clear rate limit store
     srv_module._rate_limit_store.clear()
     yield
 
@@ -28,8 +27,6 @@ def _make_client(api_key=None, rate_limit=None):
         env["AERONAVX_RATE_LIMIT"] = str(rate_limit)
 
     with patch.dict(os.environ, env, clear=False):
-        import importlib
-
         import aeronavx.api.server as srv_module
 
         # Re-read env vars
