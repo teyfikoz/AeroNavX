@@ -1,4 +1,4 @@
-# AeroNavX Deployment Guide
+# AeroNavX v3.1.0 Deployment Guide
 
 ## 1. Introduction
 AeroNavX is a production-grade AI Aviation SDK that combines geospatial analytics with AI-powered semantic search and advanced aviation intelligence modules. This guide covers deployment, configuration, and operational best practices.
@@ -9,19 +9,87 @@ AeroNavX is a production-grade AI Aviation SDK that combines geospatial analytic
 - Interfaces: CLI, FastAPI API server, Python SDK
 - Data: bundled OurAirports data, optional external datasets
 
-## 3. AI Platform Layer
+## 3. Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AERONAVX_API_KEY` | *(unset = open)* | API key for endpoint authentication |
+| `AERONAVX_RATE_LIMIT` | `60` | Max requests per minute per IP |
+| `AERONAVX_CACHE` | `~/.aeronavx` | Cache directory for HF models/embeddings |
+| `AERONAVX_OFFLINE` | `0` | Set to `1` for cache-only inference |
+| `HF_TOKEN` | — | Hugging Face API token |
+| `AERONAVX_EMBED_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model |
+
+## 4. API Authentication
+
+AeroNavX API supports optional API key authentication:
+
+- Set `AERONAVX_API_KEY` environment variable to enable authentication
+- Clients must include `X-API-Key: <key>` header in all requests
+- If `AERONAVX_API_KEY` is not set, all endpoints are open (backward compatible)
+- The `/health` endpoint is always open, regardless of API key configuration
+
+```bash
+# Enable authentication
+export AERONAVX_API_KEY="your-secret-key"
+python -m aeronavx.api.server
+
+# Client request
+curl -H "X-API-Key: your-secret-key" http://localhost:8000/airport/IST
+```
+
+## 5. Rate Limiting
+
+Built-in sliding-window rate limiting protects the API from abuse:
+
+- Default: **60 requests per minute per IP**
+- Configure via `AERONAVX_RATE_LIMIT` environment variable
+- The `/health` endpoint is exempt from rate limiting
+- Returns HTTP 429 when limit is exceeded
+
+```bash
+# Set custom rate limit
+export AERONAVX_RATE_LIMIT=120
+```
+
+## 6. Docker Deployment
+
+### Quick Start
+```bash
+# Build and run with Docker Compose
+docker compose up -d
+
+# With API key
+AERONAVX_API_KEY=your-secret docker compose up -d
+
+# Or build manually
+docker build -t aeronavx .
+docker run -p 8000:8000 -e AERONAVX_API_KEY=your-secret aeronavx
+```
+
+### docker-compose.yml Configuration
+The included `docker-compose.yml` provides:
+- Port mapping (8000:8000)
+- Environment variable passthrough for API key, rate limit, cache
+- Named volume for cache persistence
+- Automatic restart policy
+
+### Health Check
+The Docker image includes a built-in health check that polls `/health` every 30 seconds.
+
+## 7. AI Platform Layer
 The AI layer lives in `aeronavx/hf` and is optional. It provides:
 - Lazy model loading
 - Embedding cache
 - Offline inference support
 - Optional FAISS acceleration (if installed)
 
-## 4. Semantic Search Engine
+## 8. Semantic Search Engine
 - Embedding model: `sentence-transformers/all-MiniLM-L6-v2`
 - Input text built from airport metadata (name, city, country, codes)
 - Cosine similarity with cached embeddings
 
-## 5. Offline Inference
+## 9. Offline Inference
 Set offline mode to force cache-only inference:
 
 ```bash
@@ -30,7 +98,7 @@ export AERONAVX_OFFLINE=1
 
 If the model is not cached, AeroNavX raises a clear error. Pre-download the model once to enable offline-only use.
 
-## 6. Cache System
+## 10. Cache System
 Defaults:
 - Cache dir: `~/.aeronavx`
 
@@ -42,33 +110,33 @@ export AERONAVX_CACHE="/path/to/cache"
 
 Embeddings are stored under `hf/semantic_search/<model>/` as compressed NumPy files.
 
-## 7. Dataset Pipeline
+## 11. Dataset Pipeline
 - Built-in data: OurAirports (airports + runways)
 - Optional: extend with your own sources
 - For enterprise, mirror datasets in private object storage
 
-## 8. Routing Engine
+## 12. Routing Engine
 - Supports multi-leg routing and shortest-path heuristics
 - Great-circle distance and flight time estimation
 - Synthetic routing can generate waypoint sequences
 
-## 9. Jet-Lag Engine
+## 13. Jet-Lag Engine
 - Computes timezone difference, direction, severity, and recovery time
 - Uses timezonefinder if installed; falls back to longitude-based offset
 
-## 10. Emissions Engine
+## 14. Emissions Engine
 - Baseline CO2 estimation per passenger
 - Advanced emissions model with aircraft type and SAF comparison
 
-## 11. Network Intelligence
+## 15. Network Intelligence
 - Connectivity scoring via spatial neighborhood analysis
 - Hub identification and ranking
 
-## 12. Synthetic Routes
+## 16. Synthetic Routes
 - Generates realistic route waypoints along great circles
 - Returns distance and estimated time
 
-## 13. CLI Usage
+## 17. CLI Usage
 Example commands:
 
 ```bash
@@ -80,7 +148,7 @@ aeronavx emissions-advanced --from IST --to JFK --aircraft-type wide_body --saf-
 aeronavx synthetic-route --from IST --to JFK --waypoints 8
 ```
 
-## 14. API Usage
+## 18. API Usage
 Start server:
 
 ```bash
@@ -88,7 +156,7 @@ python -m aeronavx.api.server
 ```
 
 Endpoints:
-- `/health`
+- `/health` — always open
 - `/airport/{code}`
 - `/distance`
 - `/nearest`
@@ -99,7 +167,7 @@ Endpoints:
 - `/emissions-advanced`
 - `/synthetic-route`
 
-## 15. SDK Usage
+## 19. SDK Usage
 ```python
 import aeronavx as anx
 
@@ -113,7 +181,7 @@ jet_lag = anx.calculate_jet_lag(anx.get_airport("IST"), anx.get_airport("JFK"))
 emissions = anx.calculate_flight_emissions("IST", "JFK")
 ```
 
-## 16. Production Deployment
+## 20. Production Deployment
 - Use pinned versions in `requirements.txt`
 - Set `AERONAVX_CACHE` to a fast local volume
 - Preload HF models in build or warmup steps
@@ -121,26 +189,15 @@ emissions = anx.calculate_flight_emissions("IST", "JFK")
 - **GPU inference**: install CUDA-enabled `torch`, set `CUDA_VISIBLE_DEVICES`, and allow sentence-transformers to pick the GPU automatically.
 - **Monitoring**: expose `/health`, ship logs to your observability stack, and add FastAPI metrics middleware (Prometheus/OpenTelemetry).
 
-## 17. Docker Example
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY . /app
-RUN pip install --upgrade pip && pip install .[api,hf]
-ENV AERONAVX_CACHE=/data/aeronavx
-EXPOSE 8000
-CMD ["python", "-m", "aeronavx.api.server"]
-```
-
-## 18. CI/CD
+## 21. CI/CD
 - GitHub Actions: tests across Python 3.9-3.13
 - Release workflow builds sdist + wheel and publishes to PyPI
 
-## 19. Versioning
-- Current target: `3.0.1`
+## 22. Versioning
+- Current: `3.1.0`
 - Follow semver: MAJOR for API changes, MINOR for new features, PATCH for fixes
 
-## 20. Roadmap v4.0
+## 23. Roadmap v4.0
 - Demand forecasting models
 - Delay prediction
 - Airline ops dashboards
