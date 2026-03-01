@@ -279,6 +279,58 @@ Then access:
 - http://localhost:8000/emissions-advanced?from=IST&to=JFK&aircraft_type=wide_body
 - http://localhost:8000/synthetic-route?from=IST&to=JFK
 
+### API Authentication
+
+Set `AERONAVX_API_KEY` to enable API key authentication:
+
+```bash
+export AERONAVX_API_KEY="your-secret-key"
+python -m aeronavx.api.server
+```
+
+Then include the key in requests:
+
+```bash
+curl -H "X-API-Key: your-secret-key" http://localhost:8000/airport/IST
+```
+
+The `/health` endpoint is always open. If `AERONAVX_API_KEY` is not set, all endpoints are open (backward compatible).
+
+### Rate Limiting
+
+Built-in rate limiting defaults to **60 requests/minute per IP**. Configure with:
+
+```bash
+export AERONAVX_RATE_LIMIT=120  # 120 req/min
+```
+
+The `/health` endpoint is exempt from rate limiting.
+
+## Docker Deployment
+
+```bash
+# Build and run
+docker compose up -d
+
+# With API key
+AERONAVX_API_KEY=your-secret docker compose up -d
+
+# Or build manually
+docker build -t aeronavx .
+docker run -p 8000:8000 -e AERONAVX_API_KEY=your-secret aeronavx
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AERONAVX_API_KEY` | *(unset = open)* | API key for endpoint authentication |
+| `AERONAVX_RATE_LIMIT` | `60` | Max requests per minute per IP |
+| `AERONAVX_CACHE` | `~/.aeronavx` | Cache directory for HF models/embeddings |
+| `AERONAVX_OFFLINE` | `0` | Set to `1` for cache-only inference |
+| `HF_TOKEN` | — | Hugging Face API token |
+| `AERONAVX_EMBED_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model |
+
 ## Data
 
 AeroNavX includes **84,000+ airports** and **47,000+ runways** from [OurAirports](https://ourairports.com/data/), which provides:

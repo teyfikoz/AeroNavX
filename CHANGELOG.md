@@ -2,6 +2,24 @@
 
 All notable changes to AeroNavX are documented here.
 
+## [3.1.0] - 2026-02-28
+
+### Added
+- REST API authentication via `AERONAVX_API_KEY` environment variable (X-API-Key header).
+- In-memory sliding-window rate limiting (default 60 req/min, configurable via `AERONAVX_RATE_LIMIT`).
+- CORS middleware for cross-origin browser access.
+- Request logging middleware (method, path, status, duration).
+- Dockerfile, docker-compose.yml, and .dockerignore for containerized deployment.
+- API test suite (`tests/test_api.py`).
+
+### Fixed
+- Author email updated from placeholder to real address.
+- Documentation URL now points to working README anchor instead of 404 path.
+
+### Changed
+- `/health` endpoint now includes version field.
+- All protected endpoints use FastAPI `Depends()` for API key verification.
+
 ## [3.0.1] - 2026-01-19
 
 ### Fixed

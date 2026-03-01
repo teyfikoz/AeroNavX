@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aeronavx"
-version = "3.0.1"
+version = "3.1.0"
 description = "Production-grade AI aviation SDK for airport data and analytics"
 readme = "README.md"
 authors = [
-    { name = "Teyfik OZ", email = "teyfikoz@example.com" }
+    { name = "Teyfik OZ", email = "teyfikoz@yahoo.com" }
 ]
 license = { text = "MIT" }
 classifiers = [
@@ -73,7 +73,7 @@ all = [
 [project.urls]
 Homepage = "https://github.com/teyfikoz/AeroNavX"
 Repository = "https://github.com/teyfikoz/AeroNavX"
-Documentation = "https://github.com/teyfikoz/AeroNavX/docs"
+Documentation = "https://github.com/teyfikoz/AeroNavX#readme"
 Issues = "https://github.com/teyfikoz/AeroNavX/issues"
 
 [project.scripts]

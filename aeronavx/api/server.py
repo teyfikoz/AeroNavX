@@ -1,4 +1,11 @@
-from fastapi import FastAPI, HTTPException, Query
+import logging
+import os
+import time
+from collections import defaultdict
+
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from ..core.airports import get
 from ..core.distance import distance
@@ -16,9 +23,75 @@ from ..core.search import nearest_airports, search_airports_by_name
 from ..core.synthetic_routes import generate_route
 from ..exceptions import AeroNavXError
 
-app = FastAPI(title="AeroNavX API", description="AI aviation SDK API", version="3.0.1")
+logger = logging.getLogger("aeronavx.api")
+
+app = FastAPI(title="AeroNavX API", description="AI aviation SDK API", version="3.1.0")
+
+# --- CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Rate Limiting (in-memory, sliding window) ---
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = int(os.environ.get("AERONAVX_RATE_LIMIT", "60"))
 
 
+def _check_rate_limit(client_ip: str) -> None:
+    now = time.time()
+    window_start = now - 60.0
+    timestamps = _rate_limit_store[client_ip]
+    _rate_limit_store[client_ip] = [t for t in timestamps if t > window_start]
+    if len(_rate_limit_store[client_ip]) >= _RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many requests. Try again later.")
+    _rate_limit_store[client_ip].append(now)
+
+
+# --- API Key Authentication ---
+_API_KEY = os.environ.get("AERONAVX_API_KEY")
+
+
+def _verify_api_key(request: Request) -> None:
+    if _API_KEY is None:
+        return
+    key = request.headers.get("X-API-Key")
+    if key != _API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
+
+
+# --- Request logging + rate limit middleware ---
+@app.middleware("http")
+async def request_middleware(request: Request, call_next):
+    start = time.time()
+    path = request.url.path
+
+    # Rate limiting (skip /health)
+    if path != "/health":
+        client_ip = request.client.host if request.client else "unknown"
+        try:
+            _check_rate_limit(client_ip)
+        except HTTPException as exc:
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+            )
+
+    response = await call_next(request)
+    duration_ms = (time.time() - start) * 1000
+    logger.info(
+        "%s %s → %s (%.1fms)",
+        request.method,
+        path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
+
+# --- Semantic search engine (lazy loaded) ---
 _semantic_engine = None
 
 
@@ -41,13 +114,20 @@ def _get_semantic_engine():
     return _semantic_engine
 
 
+# --- Endpoints ---
+
+
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "AeroNavX API"}
+    return {"status": "ok", "service": "AeroNavX API", "version": "3.1.0"}
 
 
 @app.get("/airport/{code}")
-async def get_airport(code: str, code_type: str = Query("auto", regex="^(iata|icao|auto)$")):
+async def get_airport(
+    code: str,
+    code_type: str = Query("auto", pattern="^(iata|icao|auto)$"),
+    _auth: None = Depends(_verify_api_key),
+):
     try:
         airport = get(code, code_type=code_type)
 
@@ -64,9 +144,10 @@ async def get_airport(code: str, code_type: str = Query("auto", regex="^(iata|ic
 async def calculate_distance(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
-    code_type: str = Query("auto", regex="^(iata|icao|auto)$"),
-    model: str = Query("haversine", regex="^(haversine|slc|vincenty)$"),
-    unit: str = Query("km", regex="^(km|mi|nmi)$"),
+    code_type: str = Query("auto", pattern="^(iata|icao|auto)$"),
+    model: str = Query("haversine", pattern="^(haversine|slc|vincenty)$"),
+    unit: str = Query("km", pattern="^(km|mi|nmi)$"),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         from_airport = get(from_code, code_type=code_type)
@@ -104,6 +185,7 @@ async def find_nearest(
     lat: float = Query(..., ge=-90, le=90),
     lon: float = Query(..., ge=-180, le=180),
     n: int = Query(5, ge=1, le=100),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         airports = nearest_airports(lat, lon, n=n)
@@ -119,7 +201,11 @@ async def find_nearest(
 
 
 @app.get("/search")
-async def search(q: str = Query(..., min_length=1), limit: int = Query(20, ge=1, le=100)):
+async def search(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=100),
+    _auth: None = Depends(_verify_api_key),
+):
     try:
         airports = search_airports_by_name(q, limit=limit)
 
@@ -134,6 +220,7 @@ async def flight_time(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
     speed_kts: float = Query(450.0, ge=100, le=1000),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         from_airport = get(from_code, code_type="auto")
@@ -166,7 +253,8 @@ async def flight_time(
 async def emissions(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
-    model: str = Query("haversine", regex="^(haversine|slc|vincenty)$"),
+    model: str = Query("haversine", pattern="^(haversine|slc|vincenty)$"),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         co2_kg = estimate_co2_kg_by_codes(from_code, to_code, code_type="auto", model=model)
@@ -189,6 +277,7 @@ async def emissions(
 async def semantic_search(
     q: str = Query(..., min_length=1),
     top_k: int = Query(5, ge=1, le=50),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         engine = _get_semantic_engine()
@@ -205,6 +294,7 @@ async def jet_lag(
     from_code: str = Query(..., alias="from"),
     to_code: str = Query(..., alias="to"),
     age: int = Query(30, ge=1, le=120),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         origin = get(from_code, code_type="auto")
@@ -232,6 +322,7 @@ async def jet_lag(
 async def hubs(
     top_n: int = Query(10, ge=1, le=50),
     include_unscheduled: bool = Query(False),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         results = identify_global_hubs(top_n=top_n, scheduled_service_only=not include_unscheduled)
@@ -259,6 +350,7 @@ async def emissions_advanced(
     fuel_type: str = Query("jet_a1"),
     load_factor: float = Query(0.85, ge=0.1, le=1.0),
     saf_percent: float = Query(0.0, ge=0.0, le=100.0),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         emissions = calculate_flight_emissions(
@@ -308,6 +400,7 @@ async def synthetic_route(
     to_code: str = Query(..., alias="to"),
     waypoints: int = Query(12, ge=0, le=100),
     speed_kts: float = Query(450.0, ge=100, le=1000),
+    _auth: None = Depends(_verify_api_key),
 ):
     try:
         route = generate_route(
