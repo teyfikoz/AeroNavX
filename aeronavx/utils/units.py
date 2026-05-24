@@ -1,12 +1,12 @@
 from typing import Literal
 
 from .constants import (
+    FT_TO_M,
     KM_TO_MI,
     KM_TO_NM,
+    M_TO_FT,
     MI_TO_KM,
     NM_TO_KM,
-    M_TO_FT,
-    FT_TO_M,
 )
 
 DistanceUnit = Literal["km", "mi", "nmi", "m"]

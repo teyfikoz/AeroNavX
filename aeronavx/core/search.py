@@ -1,10 +1,10 @@
-from typing import Sequence
+from collections.abc import Sequence
+from typing import Optional
 
+from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..models.airport import Airport
-from ..core.loader import get_all_airports, get_airport_by_iata, get_airport_by_icao
-from ..utils.spatial_index import build_spatial_index
 from ..utils.logging import get_logger
-
+from ..utils.spatial_index import build_spatial_index
 
 logger = get_logger()
 
@@ -13,6 +13,7 @@ _spatial_index = None
 
 try:
     from rapidfuzz import fuzz, process
+
     HAS_RAPIDFUZZ = True
 except ImportError:
     HAS_RAPIDFUZZ = False
@@ -37,14 +38,9 @@ def search_airports_by_name(query: str, limit: int = 20) -> list[Airport]:
     query_lower = query.lower()
 
     if HAS_RAPIDFUZZ:
-        choices = {a.name: a for a in airports}
-        results = process.extract(
-            query,
-            choices.keys(),
-            scorer=fuzz.WRatio,
-            limit=limit
-        )
-        return [choices[name] for name, score, _ in results]
+        names = [a.name for a in airports]
+        results = process.extract(query, names, scorer=fuzz.WRatio, limit=limit)
+        return [airports[idx] for _, _, idx in results]
     else:
         exact_matches = [a for a in airports if query_lower in a.name.lower()]
         startswith_matches = [a for a in airports if a.name.lower().startswith(query_lower)]
@@ -53,24 +49,24 @@ def search_airports_by_name(query: str, limit: int = 20) -> list[Airport]:
         seen = set()
 
         for a in startswith_matches:
-            if a.name not in seen:
+            if a not in seen:
                 results.append(a)
-                seen.add(a.name)
+                seen.add(a)
 
         for a in exact_matches:
-            if a.name not in seen:
+            if a not in seen:
                 results.append(a)
-                seen.add(a.name)
+                seen.add(a)
 
         return results[:limit]
 
 
 def filter_airports(
-    country: str | None = None,
-    region: str | None = None,
-    municipality: str | None = None,
-    types: Sequence[str] | None = None,
-    scheduled_only: bool | None = None,
+    country: Optional[str] = None,
+    region: Optional[str] = None,
+    municipality: Optional[str] = None,
+    types: Optional[Sequence[str]] = None,
+    scheduled_only: Optional[bool] = None,
 ) -> list[Airport]:
     airports = get_all_airports()
     results = airports
@@ -86,8 +82,7 @@ def filter_airports(
     if municipality:
         municipality_lower = municipality.lower()
         results = [
-            a for a in results
-            if a.municipality and municipality_lower in a.municipality.lower()
+            a for a in results if a.municipality and municipality_lower in a.municipality.lower()
         ]
 
     if types:
@@ -109,10 +104,7 @@ def airports_in_region(region_code: str) -> list[Airport]:
 
 
 def nearest_airports(
-    lat: float,
-    lon: float,
-    n: int = 1,
-    max_distance_km: float | None = None
+    lat: float, lon: float, n: int = 1, max_distance_km: Optional[float] = None
 ) -> list[Airport]:
     index = _get_spatial_index()
     return index.nearest(lat, lon, n, max_distance_km)
@@ -123,7 +115,9 @@ def airports_within_radius(lat: float, lon: float, radius_km: float) -> list[Air
     return index.within_radius(lat, lon, radius_km)
 
 
-def nearest_airport(lat: float, lon: float, max_distance_km: float | None = None) -> Airport | None:
+def nearest_airport(
+    lat: float, lon: float, max_distance_km: Optional[float] = None
+) -> Optional[Airport]:
     """
     Find the single nearest airport to a location.
 
@@ -164,7 +158,7 @@ def nearest_airport_to_airport(code: str, n: int = 1, code_type: str = "iata") -
 
     all_nearest = nearest_airports(airport.latitude_deg, airport.longitude_deg, n + 1)
 
-    return [a for a in all_nearest if a.name != airport.name][:n]
+    return [a for a in all_nearest if a is not airport][:n]
 
 
 def clear_spatial_index() -> None:

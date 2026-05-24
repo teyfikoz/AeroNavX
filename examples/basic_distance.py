@@ -10,13 +10,10 @@ if ist and jfk:
 
     dist_km = ist.distance_to(jfk, model="haversine")
     dist_mi = aeronavx.distance_mi(
-        ist.latitude_deg, ist.longitude_deg,
-        jfk.latitude_deg, jfk.longitude_deg
+        ist.latitude_deg, ist.longitude_deg, jfk.latitude_deg, jfk.longitude_deg
     )
     dist_nmi = aeronavx.distance(
-        ist.latitude_deg, ist.longitude_deg,
-        jfk.latitude_deg, jfk.longitude_deg,
-        unit="nmi"
+        ist.latitude_deg, ist.longitude_deg, jfk.latitude_deg, jfk.longitude_deg, unit="nmi"
     )
 
     print(f"Distance (km): {dist_km:.2f}")

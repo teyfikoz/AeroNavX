@@ -1,5 +1,6 @@
 import pytest
-from aeronavx.core.distance import haversine_km, slc_km, vincenty_km, distance
+
+from aeronavx.core.distance import distance, haversine_km, slc_km, vincenty_km
 
 
 def test_haversine_distance():

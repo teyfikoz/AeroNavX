@@ -1,13 +1,13 @@
 from functools import lru_cache, wraps
 from typing import Any, Callable, TypeVar
 
-
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def simple_cache(maxsize: int = 128) -> Callable[[Callable[..., T]], Callable[..., T]]:
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         return lru_cache(maxsize=maxsize)(func)
+
     return decorator
 
 

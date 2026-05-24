@@ -1,15 +1,14 @@
 import heapq
-from typing import Sequence
+from collections.abc import Sequence
+from typing import Optional
 
-from ..models.airport import Airport
-from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..core.distance import distance
-from ..core.search import filter_airports
+from ..core.loader import get_airport_by_iata, get_airport_by_icao, get_all_airports
 from ..exceptions import RoutingError
+from ..models.airport import Airport
 from ..utils.constants import DEFAULT_CRUISE_SPEED_KTS, DEFAULT_MAX_LEG_KM
-from ..utils.units import DistanceUnit, convert_distance
 from ..utils.logging import get_logger
-
+from ..utils.units import DistanceUnit, convert_distance
 
 logger = get_logger()
 
@@ -26,7 +25,7 @@ def estimate_flight_time_hours(
         to_airport.latitude_deg,
         to_airport.longitude_deg,
         model=model,
-        unit="nmi"
+        unit="nmi",
     )
 
     return dist_nmi / speed_kts
@@ -65,7 +64,7 @@ def route_distance(
             a2.latitude_deg,
             a2.longitude_deg,
             model=model,
-            unit="km"
+            unit="km",
         )
 
         total_dist_km += dist_km
@@ -104,8 +103,8 @@ def shortest_path(
     destination_code: str,
     code_type: str = "iata",
     max_leg_km: float = DEFAULT_MAX_LEG_KM,
-    allowed_types: Sequence[str] | None = None,
-    avoid_countries: Sequence[str] | None = None,
+    allowed_types: Optional[Sequence[str]] = None,
+    avoid_countries: Optional[Sequence[str]] = None,
 ) -> list[Airport]:
     if code_type == "iata":
         origin = get_airport_by_iata(origin_code)
@@ -131,31 +130,47 @@ def shortest_path(
         avoid_set = {c.upper() for c in avoid_countries}
         all_airports = [a for a in all_airports if a.iso_country not in avoid_set]
 
-    airport_map = {a.name: a for a in all_airports}
+    def airport_key(airport: Airport) -> tuple:
+        if airport.id is not None:
+            return ("id", airport.id)
+        if airport.ident:
+            return ("ident", airport.ident)
+        if airport.gps_code:
+            return ("gps", airport.gps_code)
+        if airport.iata_code:
+            return ("iata", airport.iata_code)
+        return ("coords", airport.latitude_deg, airport.longitude_deg, airport.name)
 
-    if origin.name not in airport_map or destination.name not in airport_map:
+    airport_map = {airport_key(a): a for a in all_airports}
+    origin_key = airport_key(origin)
+    destination_key = airport_key(destination)
+
+    if origin_key not in airport_map or destination_key not in airport_map:
         raise RoutingError("Origin or destination excluded by filters")
 
     def heuristic(a: Airport, b: Airport) -> float:
         return distance(
-            a.latitude_deg, a.longitude_deg,
-            b.latitude_deg, b.longitude_deg,
-            model="haversine", unit="km"
+            a.latitude_deg,
+            a.longitude_deg,
+            b.latitude_deg,
+            b.longitude_deg,
+            model="haversine",
+            unit="km",
         )
 
-    pq = [(0.0, 0.0, origin.name, [origin])]
+    pq = [(0.0, 0.0, origin_key, [origin])]
     visited = set()
 
     while pq:
-        f_score, g_score, current_name, path = heapq.heappop(pq)
+        f_score, g_score, current_key, path = heapq.heappop(pq)
 
-        if current_name in visited:
+        if current_key in visited:
             continue
 
-        visited.add(current_name)
-        current = airport_map[current_name]
+        visited.add(current_key)
+        current = airport_map[current_key]
 
-        if current.name == destination.name:
+        if current_key == destination_key:
             return path
 
         if len(visited) > 1000:
@@ -163,7 +178,8 @@ def shortest_path(
             break
 
         for neighbor in all_airports:
-            if neighbor.name in visited:
+            neighbor_key = airport_key(neighbor)
+            if neighbor_key in visited:
                 continue
 
             leg_dist = heuristic(current, neighbor)
@@ -174,6 +190,8 @@ def shortest_path(
             new_g_score = g_score + leg_dist
             new_f_score = new_g_score + heuristic(neighbor, destination)
 
-            heapq.heappush(pq, (new_f_score, new_g_score, neighbor.name, path + [neighbor]))
+            heapq.heappush(pq, (new_f_score, new_g_score, neighbor_key, path + [neighbor]))
 
-    raise RoutingError(f"No path found from {origin_code} to {destination_code} with given constraints")
+    raise RoutingError(
+        f"No path found from {origin_code} to {destination_code} with given constraints"
+    )

@@ -2,14 +2,13 @@ import math
 from typing import Literal
 
 from ..utils.constants import (
+    EARTH_FLATTENING,
     EARTH_RADIUS_KM,
     EARTH_SEMI_MAJOR_AXIS_M,
     EARTH_SEMI_MINOR_AXIS_M,
-    EARTH_FLATTENING,
 )
-from ..utils.units import convert_distance, DistanceUnit
+from ..utils.units import DistanceUnit, convert_distance
 from ..utils.validators import validate_coordinates
-
 
 DistanceModel = Literal["haversine", "slc", "vincenty"]
 
@@ -21,8 +20,8 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     delta_lon = math.radians(lon2 - lon1)
 
     a = (
-        math.sin(delta_lat / 2) ** 2 +
-        math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
     )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
@@ -34,10 +33,9 @@ def slc_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     lat2_rad = math.radians(lat2)
     delta_lon = math.radians(lon2 - lon1)
 
-    cos_angle = (
-        math.sin(lat1_rad) * math.sin(lat2_rad) +
-        math.cos(lat1_rad) * math.cos(lat2_rad) * math.cos(delta_lon)
-    )
+    cos_angle = math.sin(lat1_rad) * math.sin(lat2_rad) + math.cos(lat1_rad) * math.cos(
+        lat2_rad
+    ) * math.cos(delta_lon)
 
     cos_angle = max(-1.0, min(1.0, cos_angle))
 
@@ -79,8 +77,7 @@ def vincenty_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         cos_lambda = math.cos(lambda_val)
 
         sin_sigma = math.sqrt(
-            (cos_U2 * sin_lambda) ** 2 +
-            (cos_U1 * sin_U2 - sin_U1 * cos_U2 * cos_lambda) ** 2
+            (cos_U2 * sin_lambda) ** 2 + (cos_U1 * sin_U2 - sin_U1 * cos_U2 * cos_lambda) ** 2
         )
 
         if sin_sigma == 0:
@@ -91,7 +88,7 @@ def vincenty_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         sigma = math.atan2(sin_sigma, cos_sigma)
 
         sin_alpha = cos_U1 * cos_U2 * sin_lambda / sin_sigma
-        cos_sq_alpha = 1 - sin_alpha ** 2
+        cos_sq_alpha = 1 - sin_alpha**2
 
         if cos_sq_alpha == 0:
             cos_2sigma_m = 0
@@ -102,9 +99,7 @@ def vincenty_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
         lambda_prev = lambda_val
         lambda_val = L + (1 - C) * f * sin_alpha * (
-            sigma + C * sin_sigma * (
-                cos_2sigma_m + C * cos_sigma * (-1 + 2 * cos_2sigma_m ** 2)
-            )
+            sigma + C * sin_sigma * (cos_2sigma_m + C * cos_sigma * (-1 + 2 * cos_2sigma_m**2))
         )
 
         if abs(lambda_val - lambda_prev) < 1e-12:
@@ -115,15 +110,22 @@ def vincenty_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     if iteration >= iteration_limit:
         return haversine_km(lat1, lon1, lat2, lon2)
 
-    u_sq = cos_sq_alpha * (a ** 2 - b ** 2) / (b ** 2)
+    u_sq = cos_sq_alpha * (a**2 - b**2) / (b**2)
 
     A = 1 + u_sq / 16384 * (4096 + u_sq * (-768 + u_sq * (320 - 175 * u_sq)))
     B = u_sq / 1024 * (256 + u_sq * (-128 + u_sq * (74 - 47 * u_sq)))
 
-    delta_sigma = B * sin_sigma * (
-        cos_2sigma_m + B / 4 * (
-            cos_sigma * (-1 + 2 * cos_2sigma_m ** 2) -
-            B / 6 * cos_2sigma_m * (-3 + 4 * sin_sigma ** 2) * (-3 + 4 * cos_2sigma_m ** 2)
+    delta_sigma = (
+        B
+        * sin_sigma
+        * (
+            cos_2sigma_m
+            + B
+            / 4
+            * (
+                cos_sigma * (-1 + 2 * cos_2sigma_m**2)
+                - B / 6 * cos_2sigma_m * (-3 + 4 * sin_sigma**2) * (-3 + 4 * cos_2sigma_m**2)
+            )
         )
     )
 
@@ -138,7 +140,7 @@ def distance(
     lat2: float,
     lon2: float,
     model: DistanceModel = "haversine",
-    unit: DistanceUnit = "km"
+    unit: DistanceUnit = "km",
 ) -> float:
     validate_coordinates(lat1, lon1)
     validate_coordinates(lat2, lon2)

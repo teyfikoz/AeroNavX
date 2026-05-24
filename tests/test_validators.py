@@ -1,5 +1,11 @@
 import pytest
-from aeronavx.utils.validators import is_valid_iata, is_valid_icao, validate_coordinates, normalize_airport_code
+
+from aeronavx.utils.validators import (
+    is_valid_iata,
+    is_valid_icao,
+    normalize_airport_code,
+    validate_coordinates,
+)
 
 
 def test_valid_iata():

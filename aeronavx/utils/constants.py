@@ -26,5 +26,5 @@ VALID_AIRPORT_TYPES = {
     "seaplane_base",
     "heliport",
     "closed",
-    "balloonport"
+    "balloonport",
 }

@@ -1,5 +1,12 @@
 import pytest
-from aeronavx.core.geodesy import initial_bearing, final_bearing, midpoint, intermediate_point, great_circle_path
+
+from aeronavx.core.geodesy import (
+    final_bearing,
+    great_circle_path,
+    initial_bearing,
+    intermediate_point,
+    midpoint,
+)
 
 
 def test_initial_bearing():
@@ -65,3 +72,11 @@ def test_great_circle_path():
 def test_invalid_fraction():
     with pytest.raises(ValueError):
         intermediate_point(0.0, 0.0, 10.0, 10.0, 1.5)
+
+
+def test_intermediate_point_same_location():
+    lat, lon = 12.34, 56.78
+
+    point = intermediate_point(lat, lon, lat, lon, 0.5)
+
+    assert point == (lat, lon)

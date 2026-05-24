@@ -1,0 +1,15 @@
+services:
+  aeronavx-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - AERONAVX_API_KEY=${AERONAVX_API_KEY:-}
+      - AERONAVX_RATE_LIMIT=${AERONAVX_RATE_LIMIT:-60}
+      - AERONAVX_CACHE=/data/aeronavx
+    volumes:
+      - aeronavx-cache:/data/aeronavx
+    restart: unless-stopped
+
+volumes:
+  aeronavx-cache:

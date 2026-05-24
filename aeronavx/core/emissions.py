@@ -1,9 +1,9 @@
-from typing import Sequence
+from collections.abc import Sequence
 
-from ..models.airport import Airport
-from ..core.loader import get_airport_by_iata, get_airport_by_icao
 from ..core.distance import distance
+from ..core.loader import get_airport_by_iata, get_airport_by_icao
 from ..exceptions import RoutingError
+from ..models.airport import Airport
 from ..utils.constants import DEFAULT_CO2_KG_PER_PAX_KM
 
 
@@ -11,7 +11,7 @@ def estimate_co2_kg_for_segment(
     from_airport: Airport,
     to_airport: Airport,
     model: str = "haversine",
-    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM
+    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM,
 ) -> float:
     dist_km = distance(
         from_airport.latitude_deg,
@@ -19,7 +19,7 @@ def estimate_co2_kg_for_segment(
         to_airport.latitude_deg,
         to_airport.longitude_deg,
         model=model,
-        unit="km"
+        unit="km",
     )
 
     return dist_km * factor_kg_per_pax_km
@@ -28,7 +28,7 @@ def estimate_co2_kg_for_segment(
 def estimate_co2_kg_for_route(
     airports: Sequence[Airport],
     model: str = "haversine",
-    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM
+    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM,
 ) -> float:
     if len(airports) < 2:
         return 0.0
@@ -37,10 +37,7 @@ def estimate_co2_kg_for_route(
 
     for i in range(len(airports) - 1):
         co2 = estimate_co2_kg_for_segment(
-            airports[i],
-            airports[i + 1],
-            model=model,
-            factor_kg_per_pax_km=factor_kg_per_pax_km
+            airports[i], airports[i + 1], model=model, factor_kg_per_pax_km=factor_kg_per_pax_km
         )
         total_co2 += co2
 
@@ -52,7 +49,7 @@ def estimate_co2_kg_by_codes(
     to_code: str,
     code_type: str = "iata",
     model: str = "haversine",
-    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM
+    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM,
 ) -> float:
     if code_type == "iata":
         from_airport = get_airport_by_iata(from_code)
@@ -76,7 +73,7 @@ def estimate_co2_kg_route_by_codes(
     codes: Sequence[str],
     code_type: str = "iata",
     model: str = "haversine",
-    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM
+    factor_kg_per_pax_km: float = DEFAULT_CO2_KG_PER_PAX_KM,
 ) -> float:
     airports = []
 

@@ -1,16 +1,19 @@
-from typing import TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from ..models.airport import Airport
 
 try:
     from scipy.spatial import KDTree as ScipyKDTree
+
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
 
-from ..utils.constants import EARTH_RADIUS_KM
 import math
+
+from ..utils.constants import EARTH_RADIUS_KM
 
 
 class SpatialIndex:
@@ -20,19 +23,14 @@ class SpatialIndex:
 
         if self._use_scipy:
             coords_rad = [
-                (math.radians(a.latitude_deg), math.radians(a.longitude_deg))
-                for a in self.airports
+                (math.radians(a.latitude_deg), math.radians(a.longitude_deg)) for a in self.airports
             ]
             self._tree = ScipyKDTree(coords_rad)
         else:
             self._tree = None
 
     def nearest(
-        self,
-        lat: float,
-        lon: float,
-        n: int = 1,
-        max_distance_km: float | None = None
+        self, lat: float, lon: float, n: int = 1, max_distance_km: Optional[float] = None
     ) -> list["Airport"]:
         if self._use_scipy:
             return self._nearest_scipy(lat, lon, n, max_distance_km)
@@ -40,11 +38,7 @@ class SpatialIndex:
             return self._nearest_linear(lat, lon, n, max_distance_km)
 
     def _nearest_scipy(
-        self,
-        lat: float,
-        lon: float,
-        n: int,
-        max_distance_km: float | None
+        self, lat: float, lon: float, n: int, max_distance_km: Optional[float]
     ) -> list["Airport"]:
         lat_rad = math.radians(lat)
         lon_rad = math.radians(lon)
@@ -54,13 +48,10 @@ class SpatialIndex:
             distances, indices = self._tree.query(
                 [lat_rad, lon_rad],
                 k=min(n, len(self.airports)),
-                distance_upper_bound=max_distance_rad
+                distance_upper_bound=max_distance_rad,
             )
         else:
-            distances, indices = self._tree.query(
-                [lat_rad, lon_rad],
-                k=min(n, len(self.airports))
-            )
+            distances, indices = self._tree.query([lat_rad, lon_rad], k=min(n, len(self.airports)))
 
         if n == 1:
             distances = [distances]
@@ -74,17 +65,12 @@ class SpatialIndex:
         return result
 
     def _nearest_linear(
-        self,
-        lat: float,
-        lon: float,
-        n: int,
-        max_distance_km: float | None
+        self, lat: float, lon: float, n: int, max_distance_km: Optional[float]
     ) -> list["Airport"]:
         from ..core.distance import haversine_km
 
         distances = [
-            (haversine_km(lat, lon, a.latitude_deg, a.longitude_deg), a)
-            for a in self.airports
+            (haversine_km(lat, lon, a.latitude_deg, a.longitude_deg), a) for a in self.airports
         ]
 
         distances.sort(key=lambda x: x[0])
@@ -106,7 +92,8 @@ class SpatialIndex:
             from ..core.distance import haversine_km
 
             return [
-                a for a in self.airports
+                a
+                for a in self.airports
                 if haversine_km(lat, lon, a.latitude_deg, a.longitude_deg) <= radius_km
             ]
 
