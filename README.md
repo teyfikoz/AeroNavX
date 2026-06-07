@@ -9,6 +9,7 @@ A production-grade **AI Aviation SDK** for airport data, flight geometry, networ
 
 ## Features
 
+[![Build](https://github.com/teyfikoz/aeronavx/actions/workflows/publish.yml/badge.svg)](https://github.com/teyfikoz/aeronavx/actions/workflows/publish.yml)
 - 🛫 **Airport Database**: 84,000+ global airports with IATA/ICAO indexing
 - 🛬 **Runway Information**: 47,000+ runways with dimensions and surfaces
 - 📊 **Aviation Statistics**: Country, continent, and global analytics

@@ -1,0 +1,15 @@
+[run]
+source = aeronavx
+omit =
+    aeronavx/api/*
+    aeronavx/cli/*
+    aeronavx/core/weather.py
+    aeronavx/core/timezone.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    @abstractmethod
