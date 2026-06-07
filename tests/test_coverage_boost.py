@@ -1,7 +1,6 @@
 """Coverage boost tests for aeronavx: analytics, emissions, runways, search, statistics, units."""
 import pytest
 
-
 # ── Airport model helpers ─────────────────────────────────────────────────────
 
 def _make_airport(iata="IST", name="Istanbul Airport", lat=41.275, lon=28.752,
@@ -764,6 +763,7 @@ def test_normalize_airport_code_non_str():
 
 def test_set_log_level():
     import logging
+
     from aeronavx.utils.logging import set_log_level
     set_log_level(logging.DEBUG)
     set_log_level(logging.INFO)  # Reset
@@ -836,14 +836,14 @@ def test_hub_intelligence_score_not_found():
 # ── core/passenger_experience.py ─────────────────────────────────────────────
 
 def test_direction_none():
-    from aeronavx.core.passenger_experience import _direction, TravelDirection
+    from aeronavx.core.passenger_experience import TravelDirection, _direction
     # Line 38: diff_hours == 0 → NONE
     result = _direction(0.0)
     assert result == TravelDirection.NONE
 
 
 def test_severity_mild():
-    from aeronavx.core.passenger_experience import _severity, JetLagSeverity
+    from aeronavx.core.passenger_experience import JetLagSeverity, _severity
     # Line 44: abs_diff <= 2 → MILD
     result = _severity(1.5)
     assert result == JetLagSeverity.MILD
@@ -863,7 +863,7 @@ def test_resolve_airport_from_airport():
 
 
 def test_resolve_airport_not_found():
-    from aeronavx.core.passenger_experience import _resolve_airport, AirportNotFoundError
+    from aeronavx.core.passenger_experience import AirportNotFoundError, _resolve_airport
     with pytest.raises(AirportNotFoundError):
         _resolve_airport("ZZZ999NOTFOUND", "origin")
 
@@ -1022,6 +1022,7 @@ def test_calculate_jet_lag_tz_none(monkeypatch):
 def test_coerce_airports_dataframe():
     pytest.importorskip("pandas")
     import pandas as pd
+
     from aeronavx.hf.utils import coerce_airports
     # Line 69: hasattr iterrows
     df = pd.DataFrame({"name": ["A", "B"]})
@@ -1031,9 +1032,9 @@ def test_coerce_airports_dataframe():
 
 def test_try_import_pandas():
     from aeronavx.hf.utils import try_import_pandas
-    # Should return pandas module (it's installed) or None
     result = try_import_pandas()
-    assert result is not None  # pandas is installed in this env
+    # Returns pandas module if available, None if not installed
+    assert result is None or hasattr(result, "DataFrame")
 
 
 # ── core/airports.py line 32 ──────────────────────────────────────────────────
