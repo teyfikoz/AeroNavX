@@ -46,7 +46,7 @@ def get_timezone_offset(
         return _approx_timezone_offset(airport.longitude_deg)
 
     if dt_utc is None:
-        dt_utc = datetime.utcnow()
+        dt_utc = datetime.now(ZoneInfo("UTC"))
 
     if dt_utc.tzinfo is None:
         dt_utc = dt_utc.replace(tzinfo=ZoneInfo("UTC"))
@@ -88,7 +88,7 @@ def local_time_for_airport(
         return None
 
     if dt_utc is None:
-        dt_utc = datetime.utcnow()
+        dt_utc = datetime.now(ZoneInfo("UTC"))
 
     if dt_utc.tzinfo is None:
         dt_utc = dt_utc.replace(tzinfo=ZoneInfo("UTC"))
